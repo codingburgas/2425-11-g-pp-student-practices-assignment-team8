@@ -1,12 +1,15 @@
 from flask import Flask
+from config import Config
+from src import create_app, db
 
-app = Flask(__name__)
-
-
-@app.route('/')
-def hello_world():  # put application's code here
-    return 'Hello World!'
-
+app = create_app(Config)
 
 if __name__ == '__main__':
-    app.run()
+    with app.app_context():
+        #db.drop_all()
+        db.create_all()
+        app.debug = True
+        app.run()
+
+
+
