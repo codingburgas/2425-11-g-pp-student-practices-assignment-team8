@@ -1,10 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block content %}
+    <h1>User Dashboard</h1>
+    {% if current_user.role == 'developer' %}
+    <div class="mb-4">
+        <a href="{{ url_for('profile.view_clients') }}" class="btn btn-primary">View Clients</a>
+    </div>
+    {% endif %}
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
 
-</body>
-</html>
+        <div class="form-group">
+            <label for="username">Username</label>
+            <div class="input-group">
+                {{ form.username(class="form-control", id="username", readonly=True) }}
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary" onclick="toggleEdit('username')">
+                        <img src="https://cdn-icons-png.flaticon.com/512/84/84380.png" alt="Edit" style="height:20px;">
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mt-3">
+            <label for="password">New Password <small class="text-muted">(leave blank to keep current)</small></label>
+            <div class="input-group">
+                {{ form.password(class="form-control", id="password", type="password") }}
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
+                        <img src="https://cdn-icons-png.flaticon.com/512/709/709612.png" alt="Show/Hide" id="eyeIcon" style="height:20px;">
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="toggleEdit('password')">
+                        <img src="https://cdn-icons-png.flaticon.com/512/84/84380.png" alt="Edit" style="height:20px;">
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-4">Save Changes</button>
+    </form>
+
+    <script>
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+            } else {
+                passwordField.type = 'password';
+            }
+        }
+
+        function toggleEdit(fieldId) {
+            const field = document.getElementById(fieldId);
+            field.readOnly = !field.readOnly;
+            if (!field.readOnly) {
+                field.focus();
+            }
+        }
+    </script>
+{% endblock %}
