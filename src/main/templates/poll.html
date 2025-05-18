@@ -1,10 +1,101 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}User Survey{% endblock %}
 
-</body>
-</html>
+{% block content %}
+<div class="container my-5">
+    <form action="{{ url_for('main_bp.poll') }}" method="POST" class="needs-validation" novalidate>
+        <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
+            <!-- Single Choice Question -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">1. How often do you use our services?</h5>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="usage" id="daily" value="daily" required>
+                    <label class="form-check-label" for="daily">Daily</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="usage" id="weekly" value="weekly">
+                    <label class="form-check-label" for="weekly">Weekly</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="usage" id="monthly" value="monthly">
+                    <label class="form-check-label" for="monthly">Monthly</label>
+                </div>
+            </div>
+
+            <!-- Multiple Choice Question -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">2. Which features do you use? (Select all that apply)</h5>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="features" id="feature1" value="feature1">
+                    <label class="form-check-label" for="feature1">Machine Learning Models</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="features" id="feature2" value="feature2">
+                    <label class="form-check-label" for="feature2">Data Analysis</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="features" id="feature3" value="feature3">
+                    <label class="form-check-label" for="feature3">Visualization Tools</label>
+                </div>
+            </div>
+
+            <!-- Add more questions following similar patterns... -->
+            
+            <!-- Rating Question -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">3. How satisfied are you with our service? (1-5)</h5>
+                <div class="btn-group" role="group">
+                    {% for i in range(1, 6) %}
+                    <input type="radio" class="btn-check" name="satisfaction" id="rating{{ i }}" value="{{ i }}" required>
+                    <label class="btn btn-outline-primary" for="rating{{ i }}">{{ i }}</label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Text Input Question -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">4. What improvements would you suggest?</h5>
+                <textarea class="form-control" name="suggestions" rows="3"></textarea>
+            </div>
+
+            <!-- More single choice questions -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">5. Would you recommend our service to others?</h5>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="recommend" id="yes" value="yes" required>
+                    <label class="form-check-label" for="yes">Yes</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="recommend" id="no" value="no">
+                    <label class="form-check-label" for="no">No</label>
+                </div>
+            </div>
+
+            <!-- Add remaining questions here... -->
+
+            <div class="text-center mt-5">
+                <button type="submit" class="btn btn-success px-5 py-2">
+                    Submit Survey
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
+{% endblock %}

@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Home - YourSite{% endblock %}
 
-</body>
-</html>
+{% block content %}
+<div class="d-flex justify-content-center align-items-center vh-100">
+    <a href="{{ url_for('main_bp.poll') }}" class="btn btn-lg btn-outline-primary px-5 py-3">
+        Take Survey
+    </a>
+</div>
+{% endblock %}

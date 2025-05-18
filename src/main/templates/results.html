@@ -1,10 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block title %}Training Results{% endblock %}
 
-</body>
-</html>
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Your Model Training Results</h2>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Model Name</th>
+                    <th>Accuracy</th>
+                    <th>Created At</th>
+                    <th>Parameters</th>
+                    <th>Weights</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr>
+                    <td>{{ result.id }}</td>
+                    <td>{{ result.model_name }}</td>
+                    <td>{{ "%.2f"|format(result.accuracy * 100) }}%</td>
+                    <td>{{ result.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>{{ result.parameters }}</td>
+                    <td>{{ result.weights[:50] }}...</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
