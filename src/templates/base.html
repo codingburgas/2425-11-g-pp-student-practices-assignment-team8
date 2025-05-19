@@ -181,6 +181,12 @@
                 </form>
 
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                    <a class="nav-link btn btn-outline-primary text-warning px-3 mx-2" href="{{ url_for('main_bp.poll') }}">
+                        <i class="bi bi-ui-checks-grid me-1"></i>Take Survey
+                    </a>
+                </li>
+
                     {% if g.current_user != None %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">

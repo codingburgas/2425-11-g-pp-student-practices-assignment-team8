@@ -2,9 +2,41 @@
 {% block title %}Home - YourSite{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-center align-items-center vh-100">
-    <a href="{{ url_for('main_bp.poll') }}" class="btn btn-lg btn-outline-primary px-5 py-3">
-        Take Survey
-    </a>
+
+<div class="container py-5">
+    <div class="row text-center text-warning mb-4">
+        <h1>Join a Club Today</h1>
+        <p class="text-muted">Explore our wide range of clubs and find your passion!</p>
+    </div>
+
+    <div class="row g-4">
+        {% set clubs = [
+            {"name": "Chess Club", "teacher": "Mr. Petrov", "image": "chess.png"},
+            {"name": "Robotics", "teacher": "Ms. Dimitrova", "image": "robots.png"},
+            {"name": "Art Club", "teacher": "Mrs. Ivanova", "image": "art.png"},
+            {"name": "Music Band", "teacher": "Mr. Georgiev", "image": "band.png"},
+            {"name": "Mathletes", "teacher": "Ms. Todorova", "image": "math.png"},
+            {"name": "Drama Club", "teacher": "Mr. Kolev", "image": "drama.png"},
+            {"name": "Debate Team", "teacher": "Ms. Hristova", "image": "debate.png"},
+            {"name": "Coding Club", "teacher": "Mr. Totev", "image": "code.png"},
+            {"name": "Sports Club", "teacher": "Mrs. Vasileva", "image": "sports.png"}
+        ] %}
+
+        {% for club in clubs %}
+        <div class="col-md-4">
+            <div class="card bg-dark border-warning h-100 text-center text-light">
+                <img src="{{ url_for('static', filename='images/' + club.image) }}"
+                     class="card-img-top border-bottom border-warning"
+                     alt="{{ club.name }}" style="height: 200px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">{{ club.name }}</h5>
+                    <p class="card-text">Head Teacher: {{ club.teacher }}</p>
+                    <a href="#" class="btn btn-warning text-dark">Take Part In</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
 </div>
+
 {% endblock %}
