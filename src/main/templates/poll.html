@@ -2,46 +2,142 @@
 {% block title %}User Survey{% endblock %}
 
 {% block content %}
+<style>
+    body {
+        background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+        color: #ffc107;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .text-primary {
+        color: #ffc107 !important;
+    }
+
+    .bg-black {
+        background-color: rgba(0, 0, 0, 0.85) !important;
+        border: 1px solid #ffc10722;
+        box-shadow: 0 0 15px #ffc10722;
+        backdrop-filter: blur(4px);
+    }
+
+    .form-check-label,
+    .form-label,
+    .form-select,
+    .form-check-input {
+        color: #ffc107;
+        background-color: transparent;
+        border-color: #ffc10788;
+    }
+
+    .form-control,
+    .form-control:focus {
+        color: #ffc107;
+        background-color: #000;
+        border: 1px solid #ffc107aa;
+        box-shadow: 0 0 5px #ffc10733;
+    }
+
+    .form-control::placeholder {
+        color: #ffc10799;
+        opacity: 0.6;
+    }
+
+    .form-check-input:checked {
+        background-color: #ffc107;
+        border-color: #ffc107;
+    }
+
+    .form-select {
+        background-color: #000;
+    }
+
+    .btn-outline-primary {
+        color: #ffc107;
+        border-color: #ffc107;
+        background-color: transparent;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #ffc107;
+        color: #000;
+    }
+
+    .btn-success {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #000;
+        box-shadow: 0 0 10px #ffc10788;
+    }
+
+    .btn-success:hover {
+        background-color: #e0ac00;
+        border-color: #d19b00;
+    }
+
+    /* Fancy yellow glowing border around form */
+    .form-wrapper {
+        background-color: #000;
+        padding: 3rem;
+        border-radius: 1rem;
+        box-shadow: 0 0 30px #ffc10722, inset 0 0 10px #ffc10711;
+        border: 2px solid #ffc10733;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Subtle yellow particles or abstract background (optional) */
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: radial-gradient(#ffc10722 1px, transparent 1px);
+        background-size: 30px 30px;
+        z-index: -1;
+        opacity: 0.1;
+    }
+
+    .form-check-input:focus,
+    .form-control:focus,
+    .form-select:focus {
+        outline: none;
+        border-color: #ffc107;
+        box-shadow: 0 0 5px #ffc10755;
+    }
+</style>
+
+
+
 <div class="container my-5">
     <form action="{{ url_for('main_bp.poll') }}" method="POST" class="needs-validation" novalidate>
-        <div class="bg-white rounded-3 shadow-sm p-4 mb-4">
-            <!-- Single Choice Question -->
+        <div class="form-wrapper bg-black">
+
+            <!-- Question 1 -->
             <div class="mb-4">
                 <h5 class="text-primary mb-3">1. How often do you use our services?</h5>
+                {% for val in ['Daily', 'Weekly', 'Monthly'] %}
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="usage" id="daily" value="daily" required>
-                    <label class="form-check-label" for="daily">Daily</label>
+                    <input class="form-check-input" type="radio" name="usage" id="{{ val }}" value="{{ val.lower() }}" required>
+                    <label class="form-check-label" for="{{ val }}">{{ val }}</label>
                 </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="usage" id="weekly" value="weekly">
-                    <label class="form-check-label" for="weekly">Weekly</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="usage" id="monthly" value="monthly">
-                    <label class="form-check-label" for="monthly">Monthly</label>
-                </div>
+                {% endfor %}
             </div>
 
-            <!-- Multiple Choice Question -->
+            <!-- Question 2 -->
             <div class="mb-4">
                 <h5 class="text-primary mb-3">2. Which features do you use? (Select all that apply)</h5>
+                {% set features_list = ['Machine Learning Models', 'Data Analysis', 'Visualization Tools', 'Automation', 'APIs'] %}
+                {% for feature in features_list %}
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="features" id="feature1" value="feature1">
-                    <label class="form-check-label" for="feature1">Machine Learning Models</label>
+                    <input class="form-check-input" type="checkbox" name="features" id="feature{{ loop.index }}" value="feature{{ loop.index }}">
+                    <label class="form-check-label" for="feature{{ loop.index }}">{{ feature }}</label>
                 </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="features" id="feature2" value="feature2">
-                    <label class="form-check-label" for="feature2">Data Analysis</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="features" id="feature3" value="feature3">
-                    <label class="form-check-label" for="feature3">Visualization Tools</label>
-                </div>
+                {% endfor %}
             </div>
 
-            <!-- Add more questions following similar patterns... -->
-            
-            <!-- Rating Question -->
+            <!-- Question 3 -->
             <div class="mb-4">
                 <h5 class="text-primary mb-3">3. How satisfied are you with our service? (1-5)</h5>
                 <div class="btn-group" role="group">
@@ -52,13 +148,13 @@
                 </div>
             </div>
 
-            <!-- Text Input Question -->
+            <!-- Question 4 -->
             <div class="mb-4">
                 <h5 class="text-primary mb-3">4. What improvements would you suggest?</h5>
-                <textarea class="form-control" name="suggestions" rows="3"></textarea>
+                <textarea class="form-control" name="suggestions" rows="3" placeholder="Your suggestions..."></textarea>
             </div>
 
-            <!-- More single choice questions -->
+            <!-- Question 5 -->
             <div class="mb-4">
                 <h5 class="text-primary mb-3">5. Would you recommend our service to others?</h5>
                 <div class="form-check">
@@ -71,7 +167,59 @@
                 </div>
             </div>
 
-            <!-- Add remaining questions here... -->
+            <!-- Question 6 -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">6. What industry are you in?</h5>
+                {% for val in ['Education', 'Healthcare', 'Finance', 'Technology', 'Other'] %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="industry" id="industry_{{ val }}" value="{{ val.lower() }}" required>
+                    <label class="form-check-label" for="industry_{{ val }}">{{ val }}</label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Question 7 -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">7. How did you hear about us?</h5>
+                <select class="form-select" name="referral" required>
+                    <option value="" disabled selected>Select one</option>
+                    <option value="search">Search Engine</option>
+                    <option value="social">Social Media</option>
+                    <option value="friend">Friend or Colleague</option>
+                    <option value="advertisement">Advertisement</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <!-- Question 8 -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">8. What device do you primarily use?</h5>
+                {% for val in ['Desktop', 'Laptop', 'Tablet', 'Mobile'] %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="device" id="device_{{ val }}" value="{{ val.lower() }}" required>
+                    <label class="form-check-label" for="device_{{ val }}">{{ val }}</label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Question 9 -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">9. Would you like to receive updates from us?</h5>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="updates" id="updates_yes" value="yes" required>
+                    <label class="form-check-label" for="updates_yes">Yes</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="updates" id="updates_no" value="no">
+                    <label class="form-check-label" for="updates_no">No</label>
+                </div>
+            </div>
+
+            <!-- Question 10 -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">10. Any final comments or feedback?</h5>
+                <textarea class="form-control" name="final_comments" rows="3" placeholder="Your comments..."></textarea>
+            </div>
 
             <div class="text-center mt-5">
                 <button type="submit" class="btn btn-success px-5 py-2">
