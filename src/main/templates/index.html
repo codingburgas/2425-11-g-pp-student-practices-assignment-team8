@@ -3,40 +3,208 @@
 
 {% block content %}
 
-<div class="container py-5">
-    <div class="row text-center text-warning mb-4">
-        <h1>Join a Club Today</h1>
-        <p class="text-muted">Explore our wide range of clubs and find your passion!</p>
-    </div>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #1a1a1a, #111);
+        background-size: 400% 400%;
+        animation: gradientShift 20s ease infinite;
+        overflow-x: hidden;
+        position: relative; /* for background shapes */
+        z-index: 1; /* Ensure content is above shapes */
+    }
 
-    <div class="row g-4">
-        {% set clubs = [
-            {"name": "Chess Club", "teacher": "Mr. Petrov", "image": "chess.png"},
-            {"name": "Robotics", "teacher": "Ms. Dimitrova", "image": "robots.png"},
-            {"name": "Art Club", "teacher": "Mrs. Ivanova", "image": "art.png"},
-            {"name": "Music Band", "teacher": "Mr. Georgiev", "image": "band.png"},
-            {"name": "Mathletes", "teacher": "Ms. Todorova", "image": "math.png"},
-            {"name": "Drama Club", "teacher": "Mr. Kolev", "image": "drama.png"},
-            {"name": "Debate Team", "teacher": "Ms. Hristova", "image": "debate.png"},
-            {"name": "Coding Club", "teacher": "Mr. Totev", "image": "code.png"},
-            {"name": "Sports Club", "teacher": "Mrs. Vasileva", "image": "sports.png"}
-        ] %}
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
 
-        {% for club in clubs %}
-        <div class="col-md-4">
-            <div class="card bg-dark border-warning h-100 text-center text-light">
-                <img src="{{ url_for('static', filename='images/' + club.image) }}"
-                     class="card-img-top border-bottom border-warning"
-                     alt="{{ club.name }}" style="height: 200px; object-fit: cover;">
-                <div class="card-body">
-                    <h5 class="card-title text-warning">{{ club.name }}</h5>
-                    <p class="card-text">Head Teacher: {{ club.teacher }}</p>
-                    <a href="#" class="btn btn-warning text-dark">Take Part In</a>
+    /* Background shapes container */
+    .background-shapes {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none; /* So shapes don’t block clicks */
+        z-index: 0; /* Behind everything */
+        user-select: none;
+    }
+
+    .shape {
+        position: absolute;
+        stroke: #fdd835;
+        stroke-width: 3;
+        fill: transparent;
+        opacity: 0.15;
+        filter: drop-shadow(0 0 2px #fdd835);
+    }
+
+    .shape1 {
+        top: 10vh;
+        left: 5vw;
+        width: 300px;
+        height: 300px;
+    }
+    .shape2 {
+        top: 40vh;
+        right: 10vw;
+        width: 400px;
+        height: 400px;
+    }
+    .shape3 {
+        bottom: 15vh;
+        left: 20vw;
+        width: 350px;
+        height: 350px;
+    }
+
+    .club-section {
+        height: 33vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+
+    .club-card {
+        width: 40vw;
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        background-color: rgba(0, 0, 0, 0.85);
+        border: 2px solid #ffc107;
+        border-radius: 16px;
+        box-shadow: 0 0 20px rgba(255, 193, 7, 0.3);
+        gap: 20px;
+        opacity: 0;
+        transform: translateY(40px);
+        transition: all 0.6s ease;
+        position: absolute;
+        z-index: 1; /* On top of background */
+    }
+
+    .club-card.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .left-align {
+        left: 2vw;
+        flex-direction: row;
+    }
+
+    .right-align {
+        right: 2vw;
+        flex-direction: row-reverse;
+    }
+
+    .club-img {
+        width: 200px;
+        height: 140px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 2px solid #ffc107;
+    }
+
+    .club-info {
+        flex: 1;
+        color: white;
+        text-align: left;
+    }
+
+    .club-title {
+        font-size: 1.6rem;
+        font-weight: bold;
+        color: #FFD700;
+    }
+
+    .club-text {
+        font-style: italic;
+        color: #ccc;
+        margin: 10px 0;
+    }
+
+    .btn-custom {
+        background-color: #ffc107;
+        color: #000;
+        font-weight: bold;
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: none;
+    }
+
+    @media (max-width: 768px) {
+        .club-card {
+            width: 90vw;
+            left: 5vw !important;
+            right: auto !important;
+            flex-direction: column !important;
+            text-align: center;
+        }
+    }
+</style>
+
+<!-- Background Shapes -->
+<div class="background-shapes" aria-hidden="true">
+    <!-- Sketched circle -->
+    <svg class="shape shape1" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="45" stroke-dasharray="10 5" />
+    </svg>
+
+    <!-- Sketched triangle -->
+    <svg class="shape shape2" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="50,10 90,90 10,90" stroke-dasharray="8 4" />
+    </svg>
+
+    <!-- Sketched irregular polygon -->
+    <svg class="shape shape3" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="10,30 40,10 80,20 90,70 60,90 20,80" stroke-dasharray="6 3" />
+    </svg>
+</div>
+
+<div>
+    {% set clubs = [
+        {"name": "Chess Club", "teacher": "Mr. Petrov", "image": "chess.png"},
+        {"name": "Robotics", "teacher": "Ms. Dimitrova", "image": "robots.png"},
+        {"name": "Art Club", "teacher": "Mrs. Ivanova", "image": "art.png"},
+        {"name": "Music Band", "teacher": "Mr. Georgiev", "image": "band.png"},
+        {"name": "Mathletes", "teacher": "Ms. Todorova", "image": "math.png"},
+        {"name": "Drama Club", "teacher": "Mr. Kolev", "image": "drama.png"},
+        {"name": "Debate Team", "teacher": "Ms. Hristova", "image": "debate.png"},
+        {"name": "Coding Club", "teacher": "Mr. Totev", "image": "code.png"},
+        {"name": "Sports Club", "teacher": "Mrs. Vasileva", "image": "sports.png"}
+    ] %}
+
+    {% for club in clubs %}
+        {% set is_even = loop.index0 % 2 == 0 %}
+        <div class="club-section">
+            <div class="club-card fade-in {% if is_even %}left-align{% else %}right-align{% endif %}">
+                <img src="{{ url_for('static', filename='images/' + club.image) }}" alt="{{ club.name }}" class="club-img">
+                <div class="club-info">
+                    <div class="club-title">{{ club.name }}</div>
+                    <div class="club-text">👨‍🏫 Head Teacher: {{ club.teacher }}</div>
+                    <a href="#" class="btn btn-custom">🎉 Take Part In</a>
                 </div>
             </div>
         </div>
-        {% endfor %}
-    </div>
+    {% endfor %}
 </div>
+
+<script>
+    // Animate cards every time they enter the viewport
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            } else {
+                entry.target.classList.remove('visible');
+            }
+        });
+    }, { threshold: 0.2 });
+
+    document.querySelectorAll('.club-card').forEach(card => observer.observe(card));
+</script>
 
 {% endblock %}

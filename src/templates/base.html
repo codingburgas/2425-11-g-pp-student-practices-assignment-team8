@@ -216,14 +216,13 @@
         </div>
     </nav>
 
-    <main class="container py-4">
-        <div class="container">
+    <main class="py-4" style="padding-top: 80px;">
             {% for message in get_flashed_messages() %}
                 <div class="alert alert-danger">
                     {{ message }}
                 </div>
             {% endfor %}
-        </div>
+
         {% block content %}{% endblock %}
     </main>
 
