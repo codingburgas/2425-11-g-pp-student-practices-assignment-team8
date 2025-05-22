@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, abort
 from flask_login import current_user
 from . import main_bp
 from .. import db
@@ -78,3 +78,73 @@ def settings():
 @main_bp.route('/products')
 def products():
     return render_template("base.html", current_user=current_user)
+
+@main_bp.route('/clubs/<club_slug>')
+def club_detail(club_slug):
+    # Extended club data with meets & location
+    clubs = {
+        'chess-club': {
+            'name': 'Chess Club',
+            'teacher': 'Mr. Petrov',
+            'image': 'chess.png',
+            'description': 'Sharpen your mind with weekly chess tournaments and strategy workshops.'
+        },
+        'robotics': {
+            'name': 'Robotics',
+            'teacher': 'Ms. Dimitrova',
+            'image': 'robots.png',
+            'description': 'Build and program robots to compete in inter-school challenges.'
+        },
+        'art-club': {
+            'name': 'Art Club',
+            'teacher': 'Mrs. Ivanova',
+            'image': 'art.png',
+            'description': 'Express yourself through painting, drawing, and mixed-media crafts.'
+        },
+        'music-band': {
+            'name': 'Music Band',
+            'teacher': 'Mr. Georgiev',
+            'image': 'band.png',
+            'description': 'Jam out in ensemble sessions and prepare for school concerts.'
+        },
+        'mathletes': {
+            'name': 'Mathletes',
+            'teacher': 'Ms. Todorova',
+            'image': 'math.png',
+            'description': 'Solve challenging math problems and compete in tournaments.'
+        },
+        'drama-club': {
+            'name': 'Drama Club',
+            'teacher': 'Mr. Kolev',
+            'image': 'drama.png',
+            'description': 'Acting, directing, and stagecraft for upcoming plays and workshops.'
+        },
+        'debate-team': {
+            'name': 'Debate Team',
+            'teacher': 'Ms. Hristova',
+            'image': 'debate.png',
+            'description': 'Hone your public speaking and argument skills in mock debates.'
+        },
+        'coding-club': {
+            'name': 'Coding Club',
+            'teacher': 'Mr. Totev',
+            'image': 'code.png',
+            'description': 'Learn to build web and desktop applications using Python and JavaScript.'
+        },
+        'sports-club': {
+            'name': 'Sports Club',
+            'teacher': 'Mrs. Vasileva',
+            'image': 'sports.png',
+            'description': 'Team sports, fitness training, and inter-school matches.'
+        },
+    }
+
+    club = clubs.get(club_slug)
+    if not club:
+        abort(404)
+
+    return render_template(
+        'club_detail.html',
+        club=club,
+        current_user=current_user
+    )

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ club.name }}{% endblock %}
+
+{% block content %}
+  <div class="container my-5">
+    <div class="card bg-black text-white p-4">
+      <h2 class="mb-3">{{ club.name }}</h2>
+      <p><strong>Head Teacher:</strong> {{ club.teacher }}</p>
+      <p>{{ club.description }}</p>
+      <p>
+        <strong>Participants:</strong>
+        <span id="participant-count">0</span> / 25
+      </p>
+      <button id="join-btn" class="btn btn-outline-primary mb-3">Join Club</button>
+      <a href="{{ url_for('main_bp.index') }}" class="btn btn-outline-primary">Back to Clubs</a>
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    let count = 0;
+    const countEl = document.getElementById("participant-count");
+    document.getElementById("join-btn").addEventListener("click", () => {
+      if (count < 25) {
+        count++;
+        countEl.textContent = count;
+        alert("Request sent.");
+      } else {
+        alert("Club is full.");
+      }
+    });
+  });
+</script>
+
+{% endblock %}

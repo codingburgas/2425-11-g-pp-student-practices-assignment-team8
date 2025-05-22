@@ -178,18 +178,22 @@
     ] %}
 
     {% for club in clubs %}
-        {% set is_even = loop.index0 % 2 == 0 %}
-        <div class="club-section">
-            <div class="club-card fade-in {% if is_even %}left-align{% else %}right-align{% endif %}">
-                <img src="{{ url_for('static', filename='images/' + club.image) }}" alt="{{ club.name }}" class="club-img">
-                <div class="club-info">
-                    <div class="club-title">{{ club.name }}</div>
-                    <div class="club-text">👨‍🏫 Head Teacher: {{ club.teacher }}</div>
-                    <a href="#" class="btn btn-custom">🎉 Take Part In</a>
-                </div>
+    {% set is_even = loop.index0 % 2 == 0 %}
+    {% set slug = club.name|lower|replace(' ', '-') %}
+    <div class="club-section">
+        <div class="club-card fade-in {% if is_even %}left-align{% else %}right-align{% endif %}">
+            <img src="{{ url_for('static', filename='images/' + club.image) }}" alt="{{ club.name }}" class="club-img">
+            <div class="club-info">
+                <div class="club-title">{{ club.name }}</div>
+                <div class="club-text">👨‍🏫 Head Teacher: {{ club.teacher }}</div>
+                <!-- New Participant Counter -->
+                <p>Participants: <span id="count-{{ slug }}">0</span> / 25</p>
+                <!-- Link to Club Detail Page -->
+                <a href="{{ url_for('main_bp.club_detail', club_slug=slug) }}" class="btn btn-custom">🎉 Take Part In</a>
             </div>
         </div>
-    {% endfor %}
+    </div>
+{% endfor %}
 </div>
 
 <script>
