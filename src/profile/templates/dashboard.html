@@ -1,6 +1,48 @@
 {% extends 'base.html' %}
 {% import "bootstrap/wtf.html" as wtf %}
 {% block content %}
+    <style>
+        /* Make input text color stay black and remove focus styles */
+        .form-control {
+            background-color: var(--surface); /* dark background */
+            border: 1px solid var(--primary); /* yellow border */
+            color: var(--primary); /* yellow text */
+        }
+
+        /* Ensure focus doesn't change appearance */
+
+
+        /* Optional: Style placeholder text if needed */
+        .form-control::placeholder {
+            color: var(--muted); /* lighter gray for placeholder */
+        }
+
+
+
+
+        /* Style for yellow button that turns black on hover */
+        .btn-primary {
+            background-color: #ffc107; /* Bootstrap warning yellow */
+            border-color: #ffc107;
+            color: black;
+        }
+
+        .btn-primary:hover {
+            background-color: black !important;
+            border-color: black !important;
+            color: white;
+        }
+
+        /* Style for icon buttons (pencil, eye) */
+        .btn-outline-secondary img {
+            filter: brightness(0) saturate(100%) invert(77%) sepia(95%) saturate(336%) hue-rotate(355deg) brightness(104%) contrast(103%);
+        }
+
+        .btn-outline-secondary:hover img {
+            filter: brightness(0) saturate(100%) invert(0%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+        }
+    </style>
+
     <h1>User Dashboard</h1>
     {% if current_user.role == 'developer' %}
     <div class="mb-4">
@@ -43,11 +85,7 @@
     <script>
         function togglePassword() {
             const passwordField = document.getElementById('password');
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-            } else {
-                passwordField.type = 'password';
-            }
+            passwordField.type = passwordField.type === 'password' ? 'text' : 'password';
         }
 
         function toggleEdit(fieldId) {

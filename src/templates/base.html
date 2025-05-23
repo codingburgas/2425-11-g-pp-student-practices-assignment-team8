@@ -120,6 +120,25 @@
             color: var(--background);
             border-color: var(--primary);
         }
+        .form-control {
+            background-color: var(--surface); /* dark background */
+            border: 1px solid var(--primary); /* yellow border */
+            color: var(--primary); /* yellow text */
+        }
+
+        /* Ensure focus doesn't change appearance */
+        .form-control:focus {
+            background-color: var(--surface);  /* keep background dark */
+            color: var(--primary);             /* keep text yellow */
+            border-color: var(--primary);      /* keep border yellow */
+            box-shadow: none;                  /* remove blue shadow */
+        }
+
+        /* Optional: Style placeholder text if needed */
+        .form-control::placeholder {
+            color: var(--muted); /* lighter gray for placeholder */
+    }
+
 
     </style>
     {% block extra_css %}{% endblock %}
@@ -171,6 +190,8 @@
                     </li>
                 </ul>
 
+                </li>
+                    {% if g.current_user != None %}
                 <form class="d-flex navbar-search mx-auto">
                     <div class="input-group">
                         <input class="form-control" type="search" placeholder="Search" aria-label="Search">
@@ -185,9 +206,6 @@
                     <a class="nav-link btn btn-outline-primary text-warning px-3 mx-2" href="{{ url_for('main_bp.poll') }}">
                         <i class="bi bi-ui-checks-grid me-1"></i>Take Survey
                     </a>
-                </li>
-
-                    {% if g.current_user != None %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle me-1"></i>{{ g.current_user }}
@@ -253,19 +271,19 @@
         <h5>Follow Us</h5>
         <ul class="list-unstyled">
           <li class="mb-2">
-            <img src="static/images/instagram.png" alt="Instagram Icon" width="24" class="me-2">
+            <img src="{{ url_for('static', filename='images/instagram.png') }}" alt="Instagram Icon" width="24">
             <a href="#" style="color: #000; text-decoration: none;">Insta</a>
           </li>
           <li class="mb-2">
-            <img src="static/images/facebook.png" alt="Facebook Icon" width="24" class="me-2">
+            <img src="{{ url_for('static', filename='images/facebook.png') }}" alt="Facebook Icon" width="24">
             <a href="#" style="color: #000; text-decoration: none;">facebook</a>
           </li>
           <li class="mb-2">
-            <img src="static/images/tiktok.png" alt="TikTok Icon" width="24" class="me-2">
+            <img src="{{ url_for('static', filename='images/tiktok.png') }}" alt="TikTok Icon" width="24">
             <a href="#" style="color: #000; text-decoration: none;">TT</a>
           </li>
           <li class="mb-2">
-            <img src="static/images/youtube.png" alt="YouTube Icon" width="24" class="me-2">
+            <img src="{{ url_for('static', filename='images/youtube.png') }}" alt="YouTube Icon" width="24">
             <a href="#" style="color: #000; text-decoration: none;">YT</a>
           </li>
         </ul>
