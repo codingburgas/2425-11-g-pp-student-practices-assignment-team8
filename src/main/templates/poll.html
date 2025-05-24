@@ -109,15 +109,14 @@
 </style>
 
 
-
 <div class="container my-5">
     <form action="{{ url_for('main_bp.poll') }}" method="POST" class="needs-validation" novalidate>
         <div class="form-wrapper bg-black">
 
-            <!-- Question 1 -->
+            <!-- 1 -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">1. How often do you use our services?</h5>
-                {% for val in ['Daily', 'Weekly', 'Monthly'] %}
+                <h5 class="text-primary mb-3">1. How often do you enjoy school activities or lessons?</h5>
+                {% for val in ['Every day', 'A few times a week', 'Rarely'] %}
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="usage" id="{{ val }}" value="{{ val.lower() }}" required>
                     <label class="form-check-label" for="{{ val }}">{{ val }}</label>
@@ -125,10 +124,10 @@
                 {% endfor %}
             </div>
 
-            <!-- Question 2 -->
+            <!-- 2 -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">2. Which features do you use? (Select all that apply)</h5>
-                {% set features_list = ['Machine Learning Models', 'Data Analysis', 'Visualization Tools', 'Automation', 'APIs'] %}
+                <h5 class="text-primary mb-3">2. Which school activities do you enjoy the most? (Select all that apply)</h5>
+                {% set features_list = ['Sports', 'Art', 'Science Projects', 'School Clubs', 'Field Trips'] %}
                 {% for feature in features_list %}
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" name="features" id="feature{{ loop.index }}" value="feature{{ loop.index }}">
@@ -137,9 +136,9 @@
                 {% endfor %}
             </div>
 
-            <!-- Question 3 -->
+            <!-- 3 -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">3. How satisfied are you with our service? (1-5)</h5>
+                <h5 class="text-primary mb-3">3. How much do you enjoy your school experience overall? (1 = Not at all, 5 = Very much)</h5>
                 <div class="btn-group" role="group">
                     {% for i in range(1, 6) %}
                     <input type="radio" class="btn-check" name="satisfaction" id="rating{{ i }}" value="{{ i }}" required>
@@ -148,15 +147,15 @@
                 </div>
             </div>
 
-            <!-- Question 4 -->
+            <!-- 4 -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">4. What improvements would you suggest?</h5>
+                <h5 class="text-primary mb-3">4. What would make your school experience better?</h5>
                 <textarea class="form-control" name="suggestions" rows="3" placeholder="Your suggestions..."></textarea>
             </div>
 
-            <!-- Question 5 -->
+            <!-- 5 -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">5. Would you recommend our service to others?</h5>
+                <h5 class="text-primary mb-3">5. Would you tell your friends that you enjoy school?</h5>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="recommend" id="yes" value="yes" required>
                     <label class="form-check-label" for="yes">Yes</label>
@@ -167,33 +166,33 @@
                 </div>
             </div>
 
-            <!-- Question 6 -->
+            <!-- 6 -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">6. What industry are you in?</h5>
-                {% for val in ['Education', 'Healthcare', 'Finance', 'Technology', 'Other'] %}
+                <h5 class="text-primary mb-3">6. What is your favorite subject in school?</h5>
+                {% for val in ['Math', 'Science', 'History', 'English', 'Other'] %}
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="industry" id="industry_{{ val }}" value="{{ val.lower() }}" required>
-                    <label class="form-check-label" for="industry_{{ val }}">{{ val }}</label>
+                    <input class="form-check-input" type="radio" name="subject" id="subject_{{ val }}" value="{{ val.lower() }}" required>
+                    <label class="form-check-label" for="subject_{{ val }}">{{ val }}</label>
                 </div>
                 {% endfor %}
             </div>
 
-            <!-- Question 7 -->
+            <!-- 7 -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">7. How did you hear about us?</h5>
+                <h5 class="text-primary mb-3">7. How did you first hear something cool about your school?</h5>
                 <select class="form-select" name="referral" required>
                     <option value="" disabled selected>Select one</option>
-                    <option value="search">Search Engine</option>
+                    <option value="teacher">From a teacher</option>
+                    <option value="friend">From a friend</option>
+                    <option value="event">School event</option>
                     <option value="social">Social Media</option>
-                    <option value="friend">Friend or Colleague</option>
-                    <option value="advertisement">Advertisement</option>
                     <option value="other">Other</option>
                 </select>
             </div>
 
-            <!-- Question 8 -->
+            <!-- 8 -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">8. What device do you primarily use?</h5>
+                <h5 class="text-primary mb-3">8. What device do you mostly use for schoolwork?</h5>
                 {% for val in ['Desktop', 'Laptop', 'Tablet', 'Mobile'] %}
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="device" id="device_{{ val }}" value="{{ val.lower() }}" required>
@@ -202,9 +201,9 @@
                 {% endfor %}
             </div>
 
-            <!-- Question 9 -->
+            <!-- 9 -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">9. Would you like to receive updates from us?</h5>
+                <h5 class="text-primary mb-3">9. Would you like to get school news or updates?</h5>
                 <div class="form-check">
                     <input class="form-check-input" type="radio" name="updates" id="updates_yes" value="yes" required>
                     <label class="form-check-label" for="updates_yes">Yes</label>
@@ -215,10 +214,56 @@
                 </div>
             </div>
 
-            <!-- Question 10 -->
+            <!-- 10 -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">10. Any final comments or feedback?</h5>
+                <h5 class="text-primary mb-3">10. Do you have any other comments or ideas about school?</h5>
                 <textarea class="form-control" name="final_comments" rows="3" placeholder="Your comments..."></textarea>
+            </div>
+
+            <!-- 11 -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">11. What do you usually do during school breaks?</h5>
+                {% for val in ['Play games', 'Chat with friends', 'Study', 'Rest', 'Other'] %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="break_activity" id="break_{{ loop.index }}" value="{{ val.lower() }}">
+                    <label class="form-check-label" for="break_{{ loop.index }}">{{ val }}</label>
+                </div>
+                {% endfor %}
+            </div>
+
+
+            <!-- 12 -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">12. Do you feel safe and welcome at school?</h5>
+                {% for val in ['Always', 'Sometimes', 'Rarely', 'Never'] %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="safe" id="safe_{{ val }}" value="{{ val.lower() }}">
+                    <label class="form-check-label" for="safe_{{ val }}">{{ val }}</label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- 13 -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">13. How do you get to school most days?</h5>
+                {% for val in ['Walk', 'Bike', 'Car', 'Bus', 'Other'] %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="transport" id="transport_{{ val }}" value="{{ val.lower() }}">
+                    <label class="form-check-label" for="transport_{{ val }}">{{ val }}</label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- 14 -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">14. What do you like most about your school?</h5>
+                <textarea class="form-control" name="like_most" rows="3" placeholder="Your answer..."></textarea>
+            </div>
+
+            <!-- 15 -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">15. Is there anything you wish your school had?</h5>
+                <textarea class="form-control" name="wish_school" rows="3" placeholder="Your ideas..."></textarea>
             </div>
 
             <div class="text-center mt-5">
@@ -231,19 +276,19 @@
 </div>
 
 <script>
-// Form validation
 (function () {
-    'use strict'
-    var forms = document.querySelectorAll('.needs-validation')
+    'use strict';
+    var forms = document.querySelectorAll('.needs-validation');
     Array.prototype.slice.call(forms).forEach(function (form) {
         form.addEventListener('submit', function (event) {
             if (!form.checkValidity()) {
-                event.preventDefault()
-                event.stopPropagation()
+                event.preventDefault();
+                event.stopPropagation();
             }
-            form.classList.add('was-validated')
-        }, false)
-    })
-})()
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
 </script>
 {% endblock %}
+
