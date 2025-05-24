@@ -191,7 +191,7 @@
                 </ul>
 
                 </li>
-                    {% if g.current_user != None %}
+                    {% if current_user.is_authenticated %}
                 <form class="d-flex navbar-search mx-auto">
                     <div class="input-group">
                         <input class="form-control" type="search" placeholder="Search" aria-label="Search">
@@ -208,7 +208,7 @@
                     </a>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-person-circle me-1"></i>{{ g.current_user }}
+                                <i class="bi bi-person-circle me-1"></i>{{ current_user.username }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="{{ url_for('profile.profile') }}">Profile</a></li>
