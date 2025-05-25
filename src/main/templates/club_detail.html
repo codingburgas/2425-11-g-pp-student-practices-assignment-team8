@@ -17,19 +17,31 @@
   </div>
 
   <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    let count = 0;
-    const countEl = document.getElementById("participant-count");
-    document.getElementById("join-btn").addEventListener("click", () => {
-      if (count < 25) {
-        count++;
-        countEl.textContent = count;
-        alert("Request sent.");
-      } else {
-        alert("Club is full.");
-      }
+document.addEventListener("DOMContentLoaded", () => {
+    const joinBtn = document.getElementById("join-btn");
+
+    joinBtn.addEventListener("click", () => {
+        fetch('{{ url_for("main_bp.join_club") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                club_name: '{{ club.name }}'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Request sent successfully!');
+                joinBtn.disabled = true;
+                joinBtn.textContent = 'Request Pending';
+            } else {
+                alert(data.message);
+            }
+        });
     });
-  });
+});
 </script>
 
 {% endblock %}
