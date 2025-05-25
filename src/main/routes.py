@@ -1,9 +1,9 @@
 from datetime import datetime
-from flask import render_template, request, jsonify, abort
-from flask_login import current_user
+from flask import render_template, request, jsonify, abort, redirect, url_for
+from flask_login import current_user, login_required
 from . import main_bp
 from .. import db
-from .models import ModelInfo
+from .models import ModelInfo, ClubRequest
 
 
 @main_bp.route('/')
@@ -148,3 +148,63 @@ def club_detail(club_slug):
         club=club,
         current_user=current_user
     )
+@main_bp.route('/club-requests/<club_name>')
+@login_required
+def club_requests(club_name):
+    if current_user.username != 'apo':
+        return redirect(url_for('main_bp.index'))
+
+    # Fetch pending requests for that club
+    requests = ClubRequest.query.filter_by(club_name=club_name, status='pending').all()
+
+    return render_template('admin/club_requests.html', requests=requests)
+
+@main_bp.route('/admin/handle-request', methods=['POST'])
+@login_required
+def handle_request():
+    if current_user.username != 'apo':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+
+    data = request.get_json()
+    req_id = data.get('request_id')
+    action = data.get('action')
+
+    req = ClubRequest.query.get(req_id)
+    if not req:
+        return jsonify({'success': False, 'message': 'Request not found'})
+
+    if action == 'accept':
+        req.status = 'accepted'
+    elif action == 'decline':
+        req.status = 'declined'
+    else:
+        return jsonify({'success': False, 'message': 'Invalid action'})
+
+    db.session.commit()
+    return jsonify({'success': True})
+@main_bp.route('/join_club', methods=['POST'])
+@login_required
+def join_club():
+    data = request.get_json()
+    club_name = data.get('club_name')
+
+    # Check if user already made a request
+    existing = ClubRequest.query.filter_by(username=current_user.username, club_name=club_name, status='pending').first()
+    if existing:
+        return jsonify({'success': False, 'message': 'You already requested to join this club'})
+
+    req = ClubRequest(username=current_user.username, club_name=club_name)
+    db.session.add(req)
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@main_bp.route('/view-requests')
+@login_required
+def view_all_requests():
+    if current_user.username != 'apo':
+        return redirect(url_for('main_bp.index'))
+
+    # Fetch all pending requests
+    requests = ClubRequest.query.filter_by(status='pending').all()
+    return render_template('admin/club_requests.html', requests=requests)

@@ -1,0 +1,66 @@
+
+{% extends "base.html" %}
+{% block title %}Club Requests{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Club Join Requests</h2>
+    {% if requests %}
+    <div class="table-responsive">
+        <table class="table table-dark table-striped">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Club Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in requests %}
+                <tr id="request-{{ request.id }}">
+                    <td>{{ request.username }}</td>
+                    <td>{{ request.club_name }}</td>
+                    <td>
+                        <button class="btn btn-success btn-sm" onclick="handleRequest('{{ request.id }}', 'accept')">
+                            Accept
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="handleRequest('{{ request.id }}', 'decline')">
+                            Decline
+                        </button>
+
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p>No pending requests.</p>
+    {% endif %}
+</div>
+
+<script>
+function handleRequest(requestId, action) {
+    fetch('{{ url_for("main_bp.handle_request") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            request_id: requestId,
+            action: action
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the row from the table
+            document.getElementById(`request-${requestId}`).remove();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+</script>
+{% endblock %}
