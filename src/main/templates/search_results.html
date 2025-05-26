@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Search Results - EduAlign{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-warning mb-4">Search Results for "{{ query }}"</h2>
+
+    {% if results %}
+        <div class="row">
+            {% for club in results %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100" style="background-color: var(--surface); border: 1px solid var(--primary);">
+                        <img src="{{ url_for('static', filename='images/' + club.image) }}" class="card-img-top" alt="{{ club.name }}" style="height: 180px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title text-warning">{{ club.name }}</h5>
+                            <p class="card-text text-warning fw-bold">👨‍🏫 Head Teacher: {{ club.teacher }}</p>
+                            <p class="card-text text-warning fw-bold">{{ club.description }}</p>
+                            <a href="{{ url_for('main_bp.club_detail', club_slug=club.slug) }}" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert" style="background-color: var(--surface); border: 1px solid var(--primary);">
+            <p class="mb-0">No clubs found matching your search criteria. Try a different search term.</p>
+        </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{{ url_for('main_bp.index') }}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> Back to Home
+        </a>
+    </div>
+</div>
+{% endblock %}
