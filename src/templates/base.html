@@ -57,16 +57,27 @@
             color: var(--text);
         }
 
+        /* Make search suggestion text darker on hover */
+        #search-suggestions .dropdown-item:hover {
+            background-color: var(--primary);
+        }
+
+        #search-suggestions .dropdown-item:hover .text-warning {
+            color: #000 !important;
+        }
+
         .navbar-search .form-control {
             background-color: var(--background);
             color: var(--text);
             border: 1px solid var(--primary);
+            border-radius: 15px 0 0 15px;
         }
 
         .navbar-search .btn {
             background-color: var(--primary);
             border: none;
             color: var(--background);
+            border-radius: 0 15px 15px 0;
         }
 
         .btn-outline-primary {
@@ -187,12 +198,14 @@
                 </ul>
 
                 {% if current_user.is_authenticated %}
-                <form class="d-flex navbar-search mx-auto me-3">
-                    <div class="input-group">
-                        <input class="form-control" type="search" placeholder="Search" aria-label="Search">
-                        <button class="btn" type="submit">
+                <form class="d-flex navbar-search mx-auto me-3" action="{{ url_for('main_bp.search_results') }}" method="get">
+                    <div class="input-group position-relative">
+                        <input id="search-input" class="form-control" type="search" name="query" placeholder="Search clubs by name or teacher" aria-label="Search" autocomplete="off">
+                        <button class="btn rounded-end" type="submit">
                             <i class="bi bi-search"></i>
                         </button>
+                        <div id="search-suggestions" class="position-absolute w-100 mt-1 overflow-hidden" style="top: 100%; left: 0; z-index: 1000; display: none; background-color: var(--surface); border: 1px solid var(--primary); max-height: 300px; overflow-y: auto; border-radius: 15px;">
+                        </div>
                     </div>
                 </form>
 
@@ -301,6 +314,112 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search-input');
+            const suggestionsContainer = document.getElementById('search-suggestions');
+
+            if (searchInput && suggestionsContainer) {
+                let debounceTimer;
+
+                // Function to fetch suggestions
+                const fetchSuggestions = (query) => {
+                    clearTimeout(debounceTimer);
+
+                    debounceTimer = setTimeout(() => {
+                        fetch(`/search-suggestions?query=${encodeURIComponent(query)}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                suggestionsContainer.innerHTML = '';
+
+                                if (data.type === 'no_results') {
+                                    // No results found
+                                    const noResults = document.createElement('div');
+                                    noResults.className = 'p-3 text-center';
+                                    noResults.textContent = 'No available suggestions';
+                                    suggestionsContainer.appendChild(noResults);
+                                    suggestionsContainer.style.display = 'block';
+                                } 
+                                else if (data.type === 'recent' && data.suggestions.length > 0) {
+                                    // Recent searches
+                                    const recentHeader = document.createElement('div');
+                                    recentHeader.className = 'p-2 text-warning fw-bold';
+                                    recentHeader.textContent = 'Recent Searches';
+                                    suggestionsContainer.appendChild(recentHeader);
+
+                                    data.suggestions.forEach(search => {
+                                        const item = document.createElement('a');
+                                        item.className = 'dropdown-item py-2 px-3';
+                                        item.href = `/search?query=${encodeURIComponent(search)}`;
+                                        item.textContent = search;
+                                        suggestionsContainer.appendChild(item);
+                                    });
+
+                                    suggestionsContainer.style.display = 'block';
+                                }
+                                else if (data.type === 'results') {
+                                    // Club results
+                                    data.suggestions.forEach(club => {
+                                        const item = document.createElement('a');
+                                        item.className = 'dropdown-item py-2 px-3';
+                                        item.href = `/clubs/${club.slug}`;
+
+                                        const nameSpan = document.createElement('div');
+                                        nameSpan.className = 'fw-bold text-warning';
+                                        nameSpan.textContent = club.name;
+
+                                        const teacherSpan = document.createElement('div');
+                                        teacherSpan.className = 'small text-warning fw-bold';
+                                        teacherSpan.textContent = `Teacher: ${club.teacher}`;
+
+                                        item.appendChild(nameSpan);
+                                        item.appendChild(teacherSpan);
+                                        suggestionsContainer.appendChild(item);
+                                    });
+
+                                    suggestionsContainer.style.display = 'block';
+                                }
+                                else {
+                                    suggestionsContainer.style.display = 'none';
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error fetching suggestions:', error);
+                            });
+                    }, 300); // Debounce delay
+                };
+
+                // Event listeners
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.trim();
+                    fetchSuggestions(query);
+                });
+
+                searchInput.addEventListener('focus', function() {
+                    const query = this.value.trim();
+                    fetchSuggestions(query);
+                });
+
+                // Close suggestions when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!searchInput.contains(event.target) && !suggestionsContainer.contains(event.target)) {
+                        suggestionsContainer.style.display = 'none';
+                    }
+                });
+
+                // Prevent form submission when selecting a suggestion
+                suggestionsContainer.addEventListener('click', function(event) {
+                    if (event.target.tagName === 'A' || event.target.closest('a')) {
+                        event.preventDefault();
+                        const link = event.target.tagName === 'A' ? event.target : event.target.closest('a');
+                        window.location.href = link.href;
+                    }
+                });
+            }
+        });
+    </script>
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>

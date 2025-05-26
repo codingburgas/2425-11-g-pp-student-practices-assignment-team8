@@ -6,42 +6,75 @@
     <div class="card bg-black text-white p-4">
       <h2 class="mb-3">{{ club.name }}</h2>
       <p><strong>Head Teacher:</strong> {{ club.teacher }}</p>
-      <p>{{ club.description }}</p>
+      <p class="my-3 p-3 bg-dark text-warning fs-5" style="border-left: 4px solid var(--primary); border-radius: 5px;">{{ club.description }}</p>
       <p>
         <strong>Participants:</strong>
         <span id="participant-count">0</span> / 25
       </p>
-      <button id="join-btn" class="btn btn-outline-primary mb-3">Join Club</button>
-      <a href="{{ url_for('main_bp.index') }}" class="btn btn-outline-primary">Back to Clubs</a>
+      {% if current_user.is_authenticated %}
+        {% if not club.is_member %}
+          <button id="joinBtn" class="btn btn-primary mb-2">Join</button>
+        {% else %}
+          <button class="btn btn-secondary mb-2" disabled>Already a Member</button>
+        {% endif %}
+      {% else %}
+        <button class="btn btn-primary mb-2" onclick="showLoginPopup()">Join</button>
+      {% endif %}
+
+      <a href="{{ url_for('main_bp.index') }}" class="btn btn-outline-primary mt-3">Back to Clubs</a>
+    </div>
+  </div>
+
+  <!-- Login Required Modal -->
+  <div class="modal fade" id="loginPopup" tabindex="-1" aria-labelledby="loginPopupLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-black border border-warning text-warning">
+        <div class="modal-header border-0">
+          <h5 class="modal-title" id="loginPopupLabel">Login Required</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          You must be logged in to join a club.
+        </div>
+        <div class="modal-footer border-0 d-flex justify-content-between">
+          <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">Go to Login</a>
+          <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
-document.addEventListener("DOMContentLoaded", () => {
-    const joinBtn = document.getElementById("join-btn");
+    function showLoginPopup() {
+      const loginModal = new bootstrap.Modal(document.getElementById('loginPopup'));
+      loginModal.show();
+    }
 
-    joinBtn.addEventListener("click", () => {
-        fetch('{{ url_for("main_bp.join_club") }}', {
+    document.addEventListener("DOMContentLoaded", () => {
+      const joinBtn = document.getElementById("joinBtn");
+      if (joinBtn) {
+        joinBtn.addEventListener("click", () => {
+          fetch('{{ url_for("main_bp.join_club") }}', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+              'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                club_name: '{{ club.name }}'
+              club_name: '{{ club.name }}'
             })
-        })
-        .then(response => response.json())
-        .then(data => {
+          })
+          .then(response => response.json())
+          .then(data => {
             if (data.success) {
-                alert('Request sent successfully!');
-                joinBtn.disabled = true;
-                joinBtn.textContent = 'Request Pending';
+              alert('Request sent successfully!');
+              joinBtn.disabled = true;
+              joinBtn.textContent = 'Request Pending';
             } else {
-                alert(data.message);
+              alert(data.message);
             }
+          });
         });
+      }
     });
-});
-</script>
-
+  </script>
 {% endblock %}
