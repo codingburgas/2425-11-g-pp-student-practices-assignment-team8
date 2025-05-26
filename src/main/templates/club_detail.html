@@ -11,10 +11,14 @@
         <strong>Participants:</strong>
         <span id="participant-count">0</span> / 25
       </p>
-      {% if club.is_member %}
-        <button id="joinBtn" class="btn btn-outline-primary">Join</button>
+      {% if current_user.is_authenticated %}
+        {% if not club.is_member %}
+          <button id="joinBtn" class="btn btn-primary mb-2">Join</button>
+        {% else %}
+          <button class="btn btn-secondary mb-2" disabled>Already a Member</button>
+        {% endif %}
       {% else %}
-        <button class="btn btn-outline-primary" onclick="showLoginPopup()">Join</button>
+        <button class="btn btn-primary mb-2" onclick="showLoginPopup()">Join</button>
       {% endif %}
 
       <a href="{{ url_for('main_bp.index') }}" class="btn btn-outline-primary mt-3">Back to Clubs</a>
