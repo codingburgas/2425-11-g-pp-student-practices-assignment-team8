@@ -58,8 +58,10 @@ def results():
 def poll():
     if request.method == 'POST':
         # Here you would handle the form submission
-        # For now, we'll just redirect with a success message
-        return render_template('index.html', message="Poll submitted successfully!")
+        # Flash a success message
+        from flask import flash
+        flash("Survey submitted successfully!", "success")
+        return redirect(url_for('main_bp.index'))
     return render_template('poll.html', current_user=current_user)
 
 @main_bp.route('/services')

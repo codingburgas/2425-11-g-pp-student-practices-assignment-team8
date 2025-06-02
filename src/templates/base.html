@@ -102,6 +102,23 @@
             border-color: var(--primary);
         }
 
+        .alert-success {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .alert-success .close-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
         footer {
             background-color: var(--surface);
             color: var(--text);
@@ -246,11 +263,20 @@
     </nav>
 
     <main class="py-4" style="padding-top: 80px;">
-            {% for message in get_flashed_messages() %}
-                <div class="alert alert-danger">
-                    {{ message }}
-                </div>
-            {% endfor %}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="container">
+                            <div class="alert alert-{{ category if category != 'message' else 'info' }}">
+                                {{ message }}
+                                {% if category == 'success' %}
+                                <span class="close-btn">&times;</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
         {% block content %}{% endblock %}
     </main>
@@ -317,6 +343,16 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to close buttons in alerts
+            document.querySelectorAll('.close-btn').forEach(function(closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    // Find the parent alert and hide it
+                    const alert = this.closest('.alert');
+                    if (alert) {
+                        alert.style.display = 'none';
+                    }
+                });
+            });
             const searchInput = document.getElementById('search-input');
             const suggestionsContainer = document.getElementById('search-suggestions');
 
