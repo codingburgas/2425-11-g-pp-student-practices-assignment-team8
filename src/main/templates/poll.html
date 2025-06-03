@@ -115,157 +115,133 @@
 
             <!-- 1 -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">1. How often do you enjoy school activities or lessons?</h5>
-                {% for val in ['Every day', 'A few times a week', 'Rarely'] %}
+                <h5 class="text-primary mb-3">1. I enjoy participating in school activities regularly</h5>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="usage" id="{{ val }}" value="{{ val.lower() }}" required>
-                    <label class="form-check-label" for="{{ val }}">{{ val }}</label>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- 2 -->
-            <div class="mb-4">
-                <h5 class="text-primary mb-3">2. Which school activities do you enjoy the most? (Select all that apply)</h5>
-                {% set features_list = ['Sports', 'Art', 'Science Projects', 'School Clubs', 'Field Trips'] %}
-                {% for feature in features_list %}
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="features" id="feature{{ loop.index }}" value="feature{{ loop.index }}">
-                    <label class="form-check-label" for="feature{{ loop.index }}">{{ feature }}</label>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- 3 -->
-            <div class="mb-4">
-                <h5 class="text-primary mb-3">3. How much do you enjoy your school experience overall? (1 = Not at all, 5 = Very much)</h5>
-                <div class="btn-group" role="group">
-                    {% for i in range(1, 6) %}
-                    <input type="radio" class="btn-check" name="satisfaction" id="rating{{ i }}" value="{{ i }}" required>
-                    <label class="btn btn-outline-primary" for="rating{{ i }}">{{ i }}</label>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- 4 -->
-            <div class="mb-4">
-                <h5 class="text-primary mb-3">4. What would make your school experience better?</h5>
-                <textarea class="form-control" name="suggestions" rows="3" placeholder="Your suggestions..."></textarea>
-            </div>
-
-            <!-- 5 -->
-            <div class="mb-4">
-                <h5 class="text-primary mb-3">5. Would you tell your friends that you enjoy school?</h5>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="recommend" id="yes" value="yes" required>
-                    <label class="form-check-label" for="yes">Yes</label>
+                    <input class="form-check-input" type="radio" name="enjoy_activities" id="enjoy_activities_true" value="true" required>
+                    <label class="form-check-label" for="enjoy_activities_true">True</label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="recommend" id="no" value="no">
-                    <label class="form-check-label" for="no">No</label>
+                    <input class="form-check-input" type="radio" name="enjoy_activities" id="enjoy_activities_false" value="false">
+                    <label class="form-check-label" for="enjoy_activities_false">False</label>
                 </div>
             </div>
 
-            <!-- 6 -->
+            <!-- 2 Sports -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">6. What is your favorite subject in school?</h5>
-                {% for val in ['Math', 'Science', 'History', 'English', 'Other'] %}
+                <h5 class="text-primary mb-3">2. I enjoy participating in sports activities</h5>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="subject" id="subject_{{ val }}" value="{{ val.lower() }}" required>
-                    <label class="form-check-label" for="subject_{{ val }}">{{ val }}</label>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- 7 -->
-            <div class="mb-4">
-                <h5 class="text-primary mb-3">7. How did you first hear something cool about your school?</h5>
-                <select class="form-select" name="referral" required>
-                    <option value="" disabled selected>Select one</option>
-                    <option value="teacher">From a teacher</option>
-                    <option value="friend">From a friend</option>
-                    <option value="event">School event</option>
-                    <option value="social">Social Media</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-
-            <!-- 8 -->
-            <div class="mb-4">
-                <h5 class="text-primary mb-3">8. What device do you mostly use for schoolwork?</h5>
-                {% for val in ['Desktop', 'Laptop', 'Tablet', 'Mobile'] %}
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="device" id="device_{{ val }}" value="{{ val.lower() }}" required>
-                    <label class="form-check-label" for="device_{{ val }}">{{ val }}</label>
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- 9 -->
-            <div class="mb-4">
-                <h5 class="text-primary mb-3">9. Would you like to get school news or updates?</h5>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="updates" id="updates_yes" value="yes" required>
-                    <label class="form-check-label" for="updates_yes">Yes</label>
+                    <input class="form-check-input" type="radio" name="enjoy_sports" id="enjoy_sports_true" value="true" required>
+                    <label class="form-check-label" for="enjoy_sports_true">True</label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="updates" id="updates_no" value="no">
-                    <label class="form-check-label" for="updates_no">No</label>
+                    <input class="form-check-input" type="radio" name="enjoy_sports" id="enjoy_sports_false" value="false">
+                    <label class="form-check-label" for="enjoy_sports_false">False</label>
                 </div>
             </div>
 
-            <!-- 10 -->
+            <!-- 3 Art -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">10. Do you have any other comments or ideas about school?</h5>
-                <textarea class="form-control" name="final_comments" rows="3" placeholder="Your comments..."></textarea>
-            </div>
-
-            <!-- 11 -->
-            <div class="mb-4">
-                <h5 class="text-primary mb-3">11. What do you usually do during school breaks?</h5>
-                {% for val in ['Play games', 'Chat with friends', 'Study', 'Rest', 'Other'] %}
+                <h5 class="text-primary mb-3">3. I enjoy participating in art activities</h5>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="break_activity" id="break_{{ loop.index }}" value="{{ val.lower() }}">
-                    <label class="form-check-label" for="break_{{ loop.index }}">{{ val }}</label>
+                    <input class="form-check-input" type="radio" name="enjoy_art" id="enjoy_art_true" value="true" required>
+                    <label class="form-check-label" for="enjoy_art_true">True</label>
                 </div>
-                {% endfor %}
-            </div>
-
-
-            <!-- 12 -->
-            <div class="mb-4">
-                <h5 class="text-primary mb-3">12. Do you feel safe and welcome at school?</h5>
-                {% for val in ['Always', 'Sometimes', 'Rarely', 'Never'] %}
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="safe" id="safe_{{ val }}" value="{{ val.lower() }}">
-                    <label class="form-check-label" for="safe_{{ val }}">{{ val }}</label>
+                    <input class="form-check-input" type="radio" name="enjoy_art" id="enjoy_art_false" value="false">
+                    <label class="form-check-label" for="enjoy_art_false">False</label>
                 </div>
-                {% endfor %}
             </div>
 
-            <!-- 13 -->
+            <!-- 4 Science -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">13. How do you get to school most days?</h5>
-                {% for val in ['Walk', 'Bike', 'Car', 'Bus', 'Other'] %}
+                <h5 class="text-primary mb-3">4. I enjoy participating in science projects</h5>
                 <div class="form-check">
-                    <input class="form-check-input" type="radio" name="transport" id="transport_{{ val }}" value="{{ val.lower() }}">
-                    <label class="form-check-label" for="transport_{{ val }}">{{ val }}</label>
+                    <input class="form-check-input" type="radio" name="enjoy_science" id="enjoy_science_true" value="true" required>
+                    <label class="form-check-label" for="enjoy_science_true">True</label>
                 </div>
-                {% endfor %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="enjoy_science" id="enjoy_science_false" value="false">
+                    <label class="form-check-label" for="enjoy_science_false">False</label>
+                </div>
             </div>
 
-            <!-- 14 -->
+            <!-- 5 Clubs -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">14. What do you like most about your school?</h5>
-                <textarea class="form-control" name="like_most" rows="3" placeholder="Your answer..."></textarea>
+                <h5 class="text-primary mb-3">5. I enjoy participating in school clubs</h5>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="enjoy_clubs" id="enjoy_clubs_true" value="true" required>
+                    <label class="form-check-label" for="enjoy_clubs_true">True</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="enjoy_clubs" id="enjoy_clubs_false" value="false">
+                    <label class="form-check-label" for="enjoy_clubs_false">False</label>
+                </div>
             </div>
 
-            <!-- 15 -->
+            <!-- 6 Field Trips -->
             <div class="mb-4">
-                <h5 class="text-primary mb-3">15. Is there anything you wish your school had?</h5>
-                <textarea class="form-control" name="wish_school" rows="3" placeholder="Your ideas..."></textarea>
+                <h5 class="text-primary mb-3">6. I enjoy going on field trips</h5>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="enjoy_fieldtrips" id="enjoy_fieldtrips_true" value="true" required>
+                    <label class="form-check-label" for="enjoy_fieldtrips_true">True</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="enjoy_fieldtrips" id="enjoy_fieldtrips_false" value="false">
+                    <label class="form-check-label" for="enjoy_fieldtrips_false">False</label>
+                </div>
             </div>
 
+            <!-- 7 Overall Satisfaction -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">7. Overall, I am satisfied with my school experience</h5>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="overall_satisfied" id="overall_satisfied_true" value="true" required>
+                    <label class="form-check-label" for="overall_satisfied_true">True</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="overall_satisfied" id="overall_satisfied_false" value="false">
+                    <label class="form-check-label" for="overall_satisfied_false">False</label>
+                </div>
+            </div>
+
+            <!-- 8 More Resources -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">8. Having more resources would improve my school experience</h5>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="more_resources" id="more_resources_true" value="true" required>
+                    <label class="form-check-label" for="more_resources_true">True</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="more_resources" id="more_resources_false" value="false">
+                    <label class="form-check-label" for="more_resources_false">False</label>
+                </div>
+            </div>
+
+            <!-- 9 Recommend -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">9. I would recommend my school to friends</h5>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="recommend" id="recommend_true" value="true" required>
+                    <label class="form-check-label" for="recommend_true">True</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="recommend" id="recommend_false" value="false">
+                    <label class="form-check-label" for="recommend_false">False</label>
+                </div>
+            </div>
+
+            <!-- 10 Math -->
+            <div class="mb-4">
+                <h5 class="text-primary mb-3">10. I enjoy math class</h5>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="enjoy_math" id="enjoy_math_true" value="true" required>
+                    <label class="form-check-label" for="enjoy_math_true">True</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="enjoy_math" id="enjoy_math_false" value="false">
+                    <label class="form-check-label" for="enjoy_math_false">False</label>
+                </div>
+            </div>
             <div class="text-center mt-5">
                 <button type="submit" class="btn btn-success px-5 py-2">
                     Submit Survey

@@ -3,11 +3,13 @@ from flask import Flask
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+from flask_mail import Mail
 import os
 
 db = SQLAlchemy()
 bootstrap = Bootstrap()
 login_manager = LoginManager()
+mail = Mail()
 
 
 def create_app(config):
@@ -20,6 +22,7 @@ def create_app(config):
     db.init_app(app)
     bootstrap.init_app(app)
     login_manager.init_app(app)
+    mail.init_app(app)
     app.config['SESSION_PERMANENT'] = False
     login_manager.remember_cookie_duration = timedelta(seconds=0)
     login_manager.session_protection = 'strong'

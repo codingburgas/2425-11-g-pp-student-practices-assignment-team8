@@ -19,6 +19,11 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user and user.verify_password(form.password.data):
             login_user(user, remember=False)
+
+            # Send login notification email if user has email address
+            if user.email:
+                send_login_notification_email(user)
+
             return redirect(url_for('main_bp.index'))
         flash('Invalid username or password.')
 
@@ -45,8 +50,11 @@ def register():
     if form.validate_on_submit():
         if User.query.filter_by(username=form.username.data).first():
             flash('Username already exists.')
+        elif User.query.filter_by(email=form.email.data).first():
+            flash('Email already registered.')
         else:
             new_user = User(username=form.username.data,
+                            email=form.email.data,
                             password=form.password.data,
                             role='client')
             db.session.add(new_user)
