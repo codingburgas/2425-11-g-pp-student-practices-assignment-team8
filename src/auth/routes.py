@@ -4,6 +4,14 @@ from . import auth_bp
 from .forms import LoginForm, RegisterForm
 from .models import User
 from .. import db, login_manager
+from flask_mail import Message
+from .. import mail
+
+def send_login_notification_email(user):
+    msg = Message("Login Notification",
+                  recipients=[user.email])
+    msg.body = f"Hello {user.username}, you have successfully logged in."
+    mail.send(msg)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -42,7 +50,12 @@ def register():
 
     # Ensure dev user exists
     if not User.query.filter_by(username='apo').first():
-        dev = User(username='apo', password='123', role='developer')
+        dev = User(
+            username='apo',
+            email='apo@example.com',  # ✅ ADD A VALID EMAIL
+            role='developer'
+        )
+        dev.password = '123'  # ✅ Use setter to hash properly
         db.session.add(dev)
         db.session.commit()
 
@@ -53,10 +66,12 @@ def register():
         elif User.query.filter_by(email=form.email.data).first():
             flash('Email already registered.')
         else:
-            new_user = User(username=form.username.data,
-                            email=form.email.data,
-                            password=form.password.data,
-                            role='client')
+            new_user = User(
+                username=form.username.data,
+                email=form.email.data,
+                role='client'
+            )
+            new_user.password = form.password.data  # ✅ Use setter
             db.session.add(new_user)
             db.session.commit()
             flash('Registration successful! Please log in.')

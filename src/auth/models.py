@@ -5,6 +5,7 @@ from .. import db
 class User(db.Model, UserMixin):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(80), unique=True, nullable=False)
     username = db.Column(db.String(80), unique=True, nullable=False)
     __password = db.Column("password", db.String(60), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='client')  # Add role field
