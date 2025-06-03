@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% block title %}Your Club Recommendation{% endblock %}
+
+{% block content %}
+<style>
+    .recommendation-container {
+        background-color: rgba(0, 0, 0, 0.85);
+        border: 1px solid #ffc10722;
+        box-shadow: 0 0 15px #ffc10722;
+        backdrop-filter: blur(4px);
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-top: 2rem;
+        text-align: center;
+    }
+    
+    .club-image {
+        max-width: 200px;
+        margin: 0 auto 1.5rem auto;
+        display: block;
+        border-radius: 50%;
+        border: 3px solid #ffc107;
+        box-shadow: 0 0 20px #ffc10755;
+    }
+    
+    .club-name {
+        color: #ffc107;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .club-teacher {
+        color: #e0e0e0;
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .club-description {
+        color: #ffffff;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+    
+    .action-buttons {
+        margin-top: 2rem;
+    }
+    
+    .btn-primary {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #000;
+        padding: 0.5rem 1.5rem;
+        margin: 0 0.5rem;
+    }
+    
+    .btn-primary:hover {
+        background-color: #e0ac00;
+        border-color: #d19b00;
+    }
+    
+    .btn-outline-secondary {
+        color: #ffc107;
+        border-color: #ffc107;
+        background-color: transparent;
+        padding: 0.5rem 1.5rem;
+        margin: 0 0.5rem;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: #ffc107;
+        color: #000;
+    }
+    
+    .recommendation-header {
+        color: #ffc107;
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 2rem;
+    }
+    
+    .recommendation-subheader {
+        color: #e0e0e0;
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 1.2rem;
+    }
+    
+    .match-percentage {
+        background-color: #ffc107;
+        color: #000;
+        font-weight: bold;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        display: inline-block;
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<div class="container">
+    <h1 class="recommendation-header">Your Perfect Club Match!</h1>
+    <p class="recommendation-subheader">Based on your survey responses, we've found the ideal club for you:</p>
+    
+    <div class="recommendation-container">
+        <div class="match-percentage">98% Match</div>
+        
+        <img src="{{ url_for('static', filename='images/' + club.image) }}" alt="{{ club.name }}" class="club-image">
+        
+        <h2 class="club-name">{{ club.name }}</h2>
+        <p class="club-teacher">Teacher: {{ club.teacher }}</p>
+        <p class="club-description">{{ club.description }}</p>
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('main_bp.club_detail', club_slug=club.slug) }}" class="btn btn-primary">
+                View Club Details
+            </a>
+            
+            {% if current_user.is_authenticated %}
+            <button class="btn btn-outline-secondary join-club-btn" data-club="{{ club.name }}">
+                Request to Join
+            </button>
+            {% else %}
+            <a href="{{ url_for('auth_bp.login') }}" class="btn btn-outline-secondary">
+                Login to Join
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{{ url_for('main_bp.index') }}" class="btn btn-outline-secondary">
+            Back to Home
+        </a>
+    </div>
+</div>
+
+{% if current_user.is_authenticated %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const joinButtons = document.querySelectorAll('.join-club-btn');
+        
+        joinButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const clubName = this.getAttribute('data-club');
+                
+                fetch('{{ url_for("main_bp.join_club") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        club_name: clubName
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Request to join club submitted successfully!');
+                        this.disabled = true;
+                        this.textContent = 'Request Submitted';
+                    } else {
+                        alert(data.message || 'Error submitting request');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            });
+        });
+    });
+</script>
+{% endif %}
+{% endblock %}

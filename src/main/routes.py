@@ -4,6 +4,9 @@ from flask_login import current_user, login_required
 from . import main_bp
 from .. import db
 from .models import ModelInfo, ClubRequest
+from .perceptron import Perceptron, survey_to_features, get_club_from_index, train_perceptron
+
+perceptron = train_perceptron()
 
 
 @main_bp.route('/')
@@ -54,14 +57,51 @@ def results():
         results=all_results,
         current_user=current_user
     )
+
+@main_bp.route('/club-recommendation')
+def club_recommendation():
+    # Get the recommended club from the session
+    club = session.get('recommended_club')
+
+    # If no recommendation is found, redirect to the poll
+    if not club:
+        from flask import flash
+        flash("Please complete the survey first to get a club recommendation.", "warning")
+        return redirect(url_for('main_bp.poll'))
+
+    return render_template('club_recommendation.html', club=club, current_user=current_user)
 @main_bp.route('/poll', methods=['GET', 'POST'])
 def poll():
     if request.method == 'POST':
-        # Here you would handle the form submission
-        # Flash a success message
-        from flask import flash
-        flash("Survey submitted successfully!", "success")
-        return redirect(url_for('main_bp.index'))
+        # Process the form data
+        survey_data = {
+            'enjoy_activities': request.form.get('enjoy_activities', 'false'),
+            'enjoy_sports': request.form.get('enjoy_sports', 'false'),
+            'enjoy_art': request.form.get('enjoy_art', 'false'),
+            'enjoy_science': request.form.get('enjoy_science', 'false'),
+            'enjoy_clubs': request.form.get('enjoy_clubs', 'false'),
+            'enjoy_fieldtrips': request.form.get('enjoy_fieldtrips', 'false'),
+            'overall_satisfied': request.form.get('overall_satisfied', 'false'),
+            'more_resources': request.form.get('more_resources', 'false'),
+            'recommend': request.form.get('recommend', 'false'),
+            'enjoy_math': request.form.get('enjoy_math', 'false')
+        }
+
+        # Convert survey data to feature vector
+        features = survey_to_features(survey_data)
+
+        # Make prediction using the perceptron
+        club_index = perceptron.predict(features)[0]
+
+        # Get club details
+        club = get_club_from_index(club_index)
+
+        # Store the recommendation in the session
+        session['recommended_club'] = club
+
+        # Redirect to the recommendation page
+        return redirect(url_for('main_bp.club_recommendation'))
+
     return render_template('poll.html', current_user=current_user)
 
 @main_bp.route('/services')
