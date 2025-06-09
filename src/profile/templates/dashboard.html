@@ -47,6 +47,12 @@
     {% if current_user.role == 'developer' %}
     <div class="mb-4">
         <a href="{{ url_for('profile.view_clients') }}" class="btn btn-primary">View Clients</a>
+        <a href="{{ url_for('profile.promote_page') }}" class="btn btn-primary mt-2">Promote User to Teacher</a>
+    </div>
+    {% endif %}
+    {% if current_user.role == 'teacher' %}
+    <div class="mb-4">
+        <a href="{{ url_for('profile.view_clients') }}" class="btn btn-primary">View Students</a>
     </div>
     {% endif %}
     <form method="POST" action="">

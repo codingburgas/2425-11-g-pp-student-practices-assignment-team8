@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for
+from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user
 
 from . import prof_bp
@@ -32,9 +32,41 @@ def profile():
     return render_template("dashboard.html", form=form, current_user=current_user)
 @prof_bp.route("/clients")
 def view_clients():
-    if not current_user.is_authenticated or current_user.role != 'developer':
+    if not current_user.is_authenticated or (current_user.role != 'developer' and current_user.role != 'teacher'):
         flash("Access denied")
         return redirect(url_for('main_bp.index'))
 
     clients = User.query.filter_by(role='client').all()
     return render_template("clients.html", clients=clients)
+
+@prof_bp.route("/promote", methods=['POST'])
+def promote_user():
+    if not current_user.is_authenticated or current_user.role != 'developer':
+        flash("Access denied.")
+        return redirect(url_for('main_bp.index'))
+
+    username = request.form.get('username')
+    user = User.query.filter_by(username=username).first()
+
+    if not user:
+        flash("User not found.")
+    elif user.role == 'teacher':
+        flash(f"{username} is already a teacher.")
+    elif user.role == 'developer':
+        flash("Cannot promote a developer.")
+    else:
+        user.role = 'teacher'
+        db.session.commit()
+        flash(f"{username} has been promoted to teacher.")
+
+    return redirect(url_for('profile.promote_page'))
+
+@prof_bp.route("/promote_user")
+def promote_page():
+    if not current_user.is_authenticated or current_user.role != 'developer':
+        flash("Access denied.")
+        return redirect(url_for('main_bp.index'))
+
+    users = User.query.filter(User.role != 'developer').all()
+    return render_template("promote.html", users=users)
+

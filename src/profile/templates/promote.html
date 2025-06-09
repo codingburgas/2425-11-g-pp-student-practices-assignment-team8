@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Promote User to Teacher</h1>
+
+<form method="POST" action="{{ url_for('profile.promote_user') }}">
+    <div class="form-group">
+        <label for="username">Select User:</label>
+        <select class="form-control" name="username" id="username" required>
+            {% for user in users %}
+                {% if user.role != 'teacher' %}
+                    <option value="{{ user.username }}">{{ user.username }} ({{ user.role }})</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">Promote to Teacher</button>
+</form>
+{% endblock %}
