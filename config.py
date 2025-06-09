@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+from urllib.parse import quote_plus
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,10 +9,10 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'super secret key')
 
     # Azure SQL Database connection
-    DB_USER = os.getenv('DB_USER')
-    DB_PASSWORD = os.getenv('DB_PASSWORD')
-    DB_SERVER = os.getenv('DB_SERVER')
-    DB_NAME = os.getenv('DB_NAME')
+    DB_USER = quote_plus(os.getenv('DB_USER'))
+    DB_PASSWORD = quote_plus(os.getenv('DB_PASSWORD'))
+    DB_SERVER = quote_plus(os.getenv('DB_SERVER'))
+    DB_NAME = quote_plus(os.getenv('DB_NAME'))
 
     # Construct the connection string for Azure SQL Database with correct driver name
     SQLALCHEMY_DATABASE_URI = (
