@@ -45,6 +45,9 @@ jobs:
             release.zip
             !venv/
 
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$PWD" >> $GITHUB_ENV
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
