@@ -1,13 +1,12 @@
-from flask import render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
-from flask_mail import Message
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from itsdangerous import URLSafeTimedSerializer
 
 from . import auth_bp
 from .forms import LoginForm, RegisterForm
 from .models import User
-from .. import db, login_manager, mail
-from ..config import Config
+from .. import db, login_manager
+from config import Config
 
 # Token serializer
 serializer = URLSafeTimedSerializer(Config.SECRET_KEY)
