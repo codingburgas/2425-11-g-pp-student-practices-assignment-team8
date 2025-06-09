@@ -205,7 +205,7 @@
                             <i class="bi bi-envelope me-1"></i>Contact
                         </a>
                     </li>
-                    {% if current_user.is_authenticated and current_user.username == 'apo' %}
+                    {% if current_user.is_authenticated and (current_user.role == 'developer' or current_user.role == 'teacher')%}
                     <li class="nav-item">
                         <a class="nav-link {% if request.path == url_for('main_bp.view_all_requests') %}active{% endif %}" href="{{ url_for('main_bp.view_all_requests') }}">
                             <i class="bi bi-eye me-1"></i>View Requests

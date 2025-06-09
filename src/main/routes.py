@@ -140,7 +140,7 @@ def club_detail(club_slug):
 @main_bp.route('/club-requests/<club_name>')
 @login_required
 def club_requests(club_name):
-    if current_user.username != 'apo':
+    if current_user.role != 'developer' and current_user.role != 'teacher':
         return redirect(url_for('main_bp.index'))
 
     # Fetch pending requests for that club
@@ -151,7 +151,7 @@ def club_requests(club_name):
 @main_bp.route('/admin/handle-request', methods=['POST'])
 @login_required
 def handle_request():
-    if current_user.username != 'apo':
+    if current_user.role != 'developer' and current_user.role != 'teacher':
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
 
     data = request.get_json()
@@ -191,7 +191,7 @@ def join_club():
 @main_bp.route('/view-requests')
 @login_required
 def view_all_requests():
-    if current_user.username != 'apo':
+    if current_user.role != 'developer' and current_user.role != 'teacher':
         return redirect(url_for('main_bp.index'))
 
     # Fetch all pending requests
