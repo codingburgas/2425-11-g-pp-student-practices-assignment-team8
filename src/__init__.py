@@ -1,3 +1,4 @@
+# src/__init__.py
 from datetime import timedelta
 from flask import Flask
 from flask_bootstrap import Bootstrap
@@ -10,7 +11,6 @@ db = SQLAlchemy()
 bootstrap = Bootstrap()
 login_manager = LoginManager()
 mail = Mail()
-
 
 def create_app(config):
     app = Flask(__name__)
@@ -34,8 +34,8 @@ def create_app(config):
     from .main import main_bp
     from .profile import prof_bp
 
-    app.register_blueprint(auth_bp)
+    app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(main_bp)
-    app.register_blueprint(prof_bp)
+    app.register_blueprint(prof_bp, url_prefix='/profile')
 
     return app
