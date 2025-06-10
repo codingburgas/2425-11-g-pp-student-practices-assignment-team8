@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'super secret key')
+    SECRET_KEY = quote_plus(os.getenv('SECRET_KEY'))
 
     # Azure SQL Database connection
     DB_USER = quote_plus(os.getenv('DB_USER'))
