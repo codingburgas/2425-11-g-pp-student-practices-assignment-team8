@@ -133,7 +133,11 @@
                 <div class="club-title">{{ club.name }}</div>
                 <div class="club-text">👨‍🏫 Head Teacher: {{ club.teacher }}</div>
                 <p>Participants: <span id="count-{{ club.slug }}">0</span> / 25</p>
-                <a href="{{ url_for('main_bp.club_detail', club_slug=club.slug) }}" class="btn btn-custom">🎉 Take Part In</a>
+                {% if not club.is_member %}
+                        <a href="{{ url_for('main_bp.club_detail', club_slug=club.slug) }}" class="btn btn-custom">🎉 Take Part In</a>
+                {% else %}
+                        <span class="text-success fw-bold">✔ You're in!</span>
+                {% endif %}
             </div>
         </div>
     </div>

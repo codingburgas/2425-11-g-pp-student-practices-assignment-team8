@@ -3,8 +3,9 @@ from flask import render_template, request, jsonify, abort, redirect, url_for, s
 from flask_login import current_user, login_required
 from . import main_bp
 from .. import db
-from .models import ModelInfo, ClubRequest
+from .models import ModelInfo, ClubRequest, Club
 from .perceptron import Perceptron, survey_to_features, get_club_from_index, train_perceptron
+from ..auth.models import User
 
 perceptron = train_perceptron()
 
@@ -14,13 +15,17 @@ def index():
     clubs_dict = get_clubs_dict()
     clubs = []
 
+    user_club_names = set()
+    if current_user.is_authenticated:
+        user_club_names = {club.name for club in current_user.clubs}
+
     for slug, club_data in clubs_dict.items():
         club = club_data.copy()
         club['slug'] = slug
+        club['is_member'] = club['name'] in user_club_names
         clubs.append(club)
 
     return render_template("index.html", clubs=clubs, current_user=current_user)
-
 
 @main_bp.route('/train-model', methods=['POST'])
 def train_model():
@@ -127,16 +132,23 @@ def products():
 @main_bp.route('/clubs/<club_slug>')
 def club_detail(club_slug):
     clubs = get_clubs_dict()
-    club = clubs.get(club_slug)
+    club_data = clubs.get(club_slug)
+    if not club_data:
+        abort(404)
+
+    club = club_data.copy()
+    club['slug'] = club_slug
 
     if not club:
         abort(404)
 
-    return render_template(
-        'club_detail.html',
-        club=club,
-        current_user=current_user
-    )
+    club['is_member'] = False
+    if current_user.is_authenticated:
+        club_obj = Club.query.filter_by(name=club['name']).first()
+        if club_obj and current_user in club_obj.users:
+            club['is_member'] = True
+
+    return render_template('club_detail.html', club=club, current_user=current_user)
 @main_bp.route('/club-requests/<club_name>')
 @login_required
 def club_requests(club_name):
@@ -151,7 +163,7 @@ def club_requests(club_name):
 @main_bp.route('/admin/handle-request', methods=['POST'])
 @login_required
 def handle_request():
-    if current_user.role != 'developer' and current_user.role != 'teacher':
+    if current_user.role not in ['developer', 'teacher']:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
 
     data = request.get_json()
@@ -164,6 +176,13 @@ def handle_request():
 
     if action == 'accept':
         req.status = 'accepted'
+        user = User.query.filter_by(username=req.username).first()
+        club = Club.query.filter_by(name=req.club_name).first()
+
+        if user and club and user not in club.users:
+            club.users.append(user)
+            club.participants += 1  # ✅ Increment participant count
+
     elif action == 'decline':
         req.status = 'declined'
     else:
@@ -171,21 +190,33 @@ def handle_request():
 
     db.session.commit()
     return jsonify({'success': True})
+
 @main_bp.route('/join_club', methods=['POST'])
 @login_required
 def join_club():
     data = request.get_json()
-    club_name = data.get('club_name')
+    club_slug = data.get('slug')
 
-    # Check if user already made a request
-    existing = ClubRequest.query.filter_by(username=current_user.username, club_name=club_name, status='pending').first()
+    club = Club.query.filter_by(slug=club_slug).first()
+
+    if not club:
+        print(club)
+        return jsonify({'success': False, 'message': 'Club not found'})
+
+    if current_user in club.users:
+        return jsonify({'success': False, 'message': 'You are already a member of this club'})
+
+    existing = ClubRequest.query.filter_by(username=current_user.username, club_name=club.name, status='pending').first()
     if existing:
         return jsonify({'success': False, 'message': 'You already requested to join this club'})
 
-    req = ClubRequest(username=current_user.username, club_name=club_name)
+    req = ClubRequest(username=current_user.username, club_name=club.name)
     db.session.add(req)
     db.session.commit()
     return jsonify({'success': True})
+
+
+
 
 
 @main_bp.route('/view-requests')

@@ -1,6 +1,5 @@
 from .. import db
 from datetime import datetime
-
 class ModelInfo(db.Model):
     __tablename__ = 'model_info'
     id = db.Column(db.Integer, primary_key=True)
@@ -15,3 +14,19 @@ class ClubRequest(db.Model):
     username = db.Column(db.String(64))
     club_name = db.Column(db.String(64))
     status = db.Column(db.String(20), default='pending')  # e.g., 'pending', 'accepted', 'declined'
+
+
+class Club(db.Model):
+    __tablename__ = 'clubs'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True, nullable=False)
+    slug = db.Column(db.String(64), unique=True, nullable=False)
+    participants = db.Column(db.Integer, default=0)
+    users = db.relationship('User', secondary='club_members', back_populates='clubs')
+
+
+# Association table for many-to-many relationship (optional, if each club has many users and vice versa)
+club_members = db.Table('club_members',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('club_id', db.Integer, db.ForeignKey('clubs.id'), primary_key=True)
+)
