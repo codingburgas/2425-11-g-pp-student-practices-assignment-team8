@@ -16,6 +16,7 @@ jwt = JWTManager()
 def create_app(config):
     app = Flask(__name__)
     app.config.from_object(config)
+    app.secret_key = os.environ.get('SECRET_KEY')
 
     template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
     app.template_folder = template_dir
