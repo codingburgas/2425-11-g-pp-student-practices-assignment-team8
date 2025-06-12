@@ -8,6 +8,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(80), unique=True, nullable=False)
     __password = db.Column("password", db.String(60), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='student')
+    email = db.Column(db.String(120), unique=True, nullable=False)
     clubs = db.relationship('Club', secondary='club_members', back_populates='users')
 
     @property

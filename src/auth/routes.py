@@ -61,6 +61,7 @@ def register():
         else:
             new_user = User(
                 username=form.username.data,
+                email=form.email.data,
                 role='client',
             )
             new_user.password = form.password.data
@@ -69,4 +70,3 @@ def register():
             return redirect(url_for('auth.login'))
 
     return render_template("register.html", form=form)
-

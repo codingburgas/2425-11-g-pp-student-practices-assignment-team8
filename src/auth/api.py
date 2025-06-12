@@ -50,15 +50,23 @@ def api_register():
     
     username = request.json.get('username', None)
     password = request.json.get('password', None)
-    
+    email = request.json.get('email', None)
+
     if not username or not password:
         return jsonify({"error": "Missing username or password"}), 400
     
     if User.query.filter_by(username=username).first():
         return jsonify({"error": "Username already exists"}), 409
     
+    if not email:
+        return jsonify({"error": "Missing email"}), 400
+
+    if User.query.filter_by(email=email).first():
+        return jsonify({"error": "Email already exists"}), 409
+
     new_user = User(
         username=username,
+        email=email,
         role='client',
     )
     new_user.password = password
