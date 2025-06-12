@@ -9,11 +9,14 @@
       <p class="my-3 p-3 bg-dark text-warning fs-5" style="border-left: 4px solid var(--primary); border-radius: 5px;">{{ club.description }}</p>
       <p>
         <strong>Participants:</strong>
-        <span id="participant-count">0</span> / 25
+        <span id="participant-count">{{ club.participant_count }}</span> / 25
       </p>
+      {% if club.is_full %}
+        <div class="alert alert-danger">The club is full</div>
+      {% endif %}
       {% if current_user.is_authenticated %}
         {% if not club.is_member %}
-          <button id="joinBtn" class="btn btn-primary mb-2">Join</button>
+          <button id="joinBtn" class="btn btn-primary mb-2" {% if club.is_full %}disabled{% endif %}>Join</button>
         {% else %}
           <button class="btn btn-secondary mb-2" disabled>Already a Member</button>
         {% endif %}

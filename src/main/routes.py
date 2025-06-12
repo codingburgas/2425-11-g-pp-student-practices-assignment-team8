@@ -22,6 +22,8 @@ def index():
     for slug, club_data in clubs_dict.items():
         club = club_data.copy()
         club['slug'] = slug
+        club_obj = Club.query.filter_by(name=club['name']).first()
+        club['participant_count'] = club_obj.participants if club_obj else 0
         club['is_member'] = club['name'] in user_club_names
         clubs.append(club)
 
@@ -143,8 +145,10 @@ def club_detail(club_slug):
         abort(404)
 
     club['is_member'] = False
+    club_obj = Club.query.filter_by(name=club['name']).first()
+    club['participant_count'] = club_obj.participants if club_obj else 0
+    club['is_full'] = club['participant_count'] >= 25
     if current_user.is_authenticated:
-        club_obj = Club.query.filter_by(name=club['name']).first()
         if club_obj and current_user in club_obj.users:
             club['is_member'] = True
 
@@ -180,6 +184,8 @@ def handle_request():
         club = Club.query.filter_by(name=req.club_name).first()
 
         if user and club and user not in club.users:
+            if club.participants >= 25:
+                return jsonify({'success': False, 'message': 'The club is full'}), 400
             club.users.append(user)
             club.participants += 1  # ✅ Increment participant count
 
