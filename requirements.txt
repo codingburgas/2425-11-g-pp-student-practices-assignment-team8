@@ -14,5 +14,3 @@ Flask-Mail~=0.10.0
 Flask-Session~=0.8.0
 gunicorn ~=23.0.0
 Flask-JWT-Extended~=4.6.0
-redis~=6.2.0
-requests~=2.32.4

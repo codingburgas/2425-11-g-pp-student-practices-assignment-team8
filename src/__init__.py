@@ -1,4 +1,3 @@
-# src/__init__.py
 from datetime import timedelta
 from flask import Flask
 from flask_bootstrap import Bootstrap
@@ -6,8 +5,6 @@ from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from flask_jwt_extended import JWTManager
-from flask_session import Session
-import redis
 import os
 
 db = SQLAlchemy()
@@ -15,7 +12,6 @@ bootstrap = Bootstrap()
 login_manager = LoginManager()
 mail = Mail()
 jwt = JWTManager()
-session = Session()
 
 def create_app(config):
     app = Flask(__name__)
@@ -24,24 +20,12 @@ def create_app(config):
     template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
     app.template_folder = template_dir
 
-    # Redis session setup
-    app.config['SESSION_TYPE'] = 'redis'
-    app.config['SESSION_USE_SIGNER'] = True
-    app.config['SESSION_PERMANENT'] = False
-    app.config['SESSION_KEY_PREFIX'] = 'session:'
-
-    redis_url = os.getenv('REDIS_URL')
-    if not redis_url:
-        raise ValueError("REDIS_URL environment variable not set")
-    app.config['SESSION_REDIS'] = redis.from_url(redis_url)
-
-    Session(app)
-
     db.init_app(app)
     bootstrap.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
     jwt.init_app(app)
+    app.config['SESSION_PERMANENT'] = False
     login_manager.remember_cookie_duration = timedelta(seconds=0)
     login_manager.session_protection = 'strong'
 

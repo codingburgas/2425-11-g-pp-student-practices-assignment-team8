@@ -14,7 +14,7 @@ class Config:
     DB_SERVER = os.getenv('DB_SERVER')
     DB_NAME = os.getenv('DB_NAME')
 
-    # Construct the connection string for Azure SQL Database with correct driver name
+    # Construct the connection string for Azure SQL Database with the correct driver name
     SQLALCHEMY_DATABASE_URI = (
         f'mssql+pyodbc://{DB_USER}:{DB_PASSWORD}@{DB_SERVER}:1433/{DB_NAME}'
         '?driver=ODBC+Driver+17+for+SQL+Server'
@@ -35,8 +35,3 @@ class Config:
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
-
-    SESSION_TYPE = 'redis'
-    SESSION_PERMANENT = False
-    SESSION_USE_SIGNER = True
-    SESSION_REDIS = redis.from_url(os.getenv('REDIS_URL'))
