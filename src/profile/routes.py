@@ -69,4 +69,34 @@ def promote_page():
 
     users = User.query.filter(User.role != 'developer').all()
     return render_template("promote.html", users=users)
+@prof_bp.route('/edit_user/<int:user_id>', methods=['POST'])
+def edit_user(user_id):
+    if not current_user.is_authenticated or (current_user.role != 'developer' and current_user.role != 'teacher'):
+        return {"success": False, "message": "Access denied"}, 403
+    user = User.query.get(user_id)
+    if not user:
+        return {"success": False, "message": "User not found"}, 404
+    username = request.form.get('username')
+    email = request.form.get('email')
+    role = request.form.get('role')
+    # Check for unique username/email
+    if User.query.filter(User.username == username, User.id != user_id).first():
+        return {"success": False, "message": "Username already taken"}, 400
+    if User.query.filter(User.email == email, User.id != user_id).first():
+        return {"success": False, "message": "Email already taken"}, 400
+    user.username = username
+    user.email = email
+    user.role = role
+    db.session.commit()
+    return {"success": True}
 
+@prof_bp.route('/delete_user/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
+    if not current_user.is_authenticated or (current_user.role != 'developer' and current_user.role != 'teacher'):
+        return {"success": False, "message": "Access denied"}, 403
+    user = User.query.get(user_id)
+    if not user:
+        return {"success": False, "message": "User not found"}, 404
+    db.session.delete(user)
+    db.session.commit()
+    return redirect(url_for('profile.view_clients'))
