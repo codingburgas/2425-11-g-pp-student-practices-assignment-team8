@@ -1,9 +1,8 @@
 from flask import render_template, redirect, url_for, flash
 from flask_login import login_user, logout_user, current_user, login_required
 from itsdangerous import URLSafeTimedSerializer
-
+from .forms import LoginForm, RegistrationForm
 from . import auth_bp
-from .forms import LoginForm, RegisterForm
 from .models import User
 from .. import db, login_manager
 from config import Config
@@ -55,7 +54,7 @@ def register():
         db.session.add(dev)
         db.session.commit()
 
-    form = RegisterForm()
+    form = RegistrationForm()
     if form.validate_on_submit():
         if User.query.filter_by(username=form.username.data).first():
             flash('Username already exists.')
