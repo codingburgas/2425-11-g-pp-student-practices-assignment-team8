@@ -1,12 +1,15 @@
 import os
 from datetime import timedelta
-import redis
 from dotenv import load_dotenv
 
 load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY')
+    SESSION_TYPE = 'null'
+    SESSION_PERMANENT = True
+    PERMANENT_SESSION_LIFETIME = 3600
+    SESSION_USE_SIGNER = True
 
     # Azure SQL Database connection
     DB_USER = os.getenv('DB_USER')
