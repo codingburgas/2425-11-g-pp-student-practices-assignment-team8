@@ -6,7 +6,7 @@ from .. import db
 from .models import ModelInfo, ClubRequest, Club
 from .perceptron import Perceptron, survey_to_features, get_club_from_index, train_perceptron
 from ..auth.models import User
-
+from .models import ClubEvent
 perceptron = train_perceptron()
 
 
@@ -360,3 +360,17 @@ def search_results():
         results=results,
         current_user=current_user
     )
+
+
+@main_bp.route('/clubs/<club_slug>/calendar')
+@login_required
+def club_calendar(club_slug):
+    club = Club.query.filter_by(slug=club_slug).first()
+    if not club:
+        abort(404)
+
+    # Show calendar only to members or teachers
+    if current_user not in club.users and current_user.role != 'teacher':
+        return redirect(url_for('main_bp.club_detail', club_slug=club_slug))
+
+    return render_template('admin/club_calendar.html', club=club, current_user=current_user)
