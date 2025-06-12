@@ -1,6 +1,6 @@
 import os
 from datetime import timedelta
-from urllib.parse import quote_plus
+import redis
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -35,3 +35,8 @@ class Config:
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
+
+    SESSION_TYPE = 'redis'
+    SESSION_PERMANENT = False
+    SESSION_USE_SIGNER = True
+    SESSION_REDIS = redis.from_url(os.getenv('REDIS_URL'))
