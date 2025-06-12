@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}{{ club.name }} - Schedule{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-warning">{{ club.name }} - Club Schedule</h2>
+    <div id="calendar-controls" class="d-flex justify-content-between align-items-center mb-3">
+        <button class="btn btn-outline-primary" onclick="changeMonth(-1)">⬅ Prev</button>
+        <h4 id="calendar-month-year" class="text-white"></h4>
+        <button class="btn btn-outline-primary" onclick="changeMonth(1)">Next ➡</button>
+    </div>
+    <div id="calendar" class="d-grid gap-2" style="grid-template-columns: repeat(7, 1fr);"></div>
+</div>
+
+<script>
+    const currentUserRole = "{{ current_user.role }}";
+    const clubSlug = "{{ club.slug }}";
+    const eventDates = new Set();
+
+    const calendar = document.getElementById("calendar");
+    const monthYear = document.getElementById("calendar-month-year");
+
+    let current = new Date();
+
+    function renderCalendar() {
+        calendar.innerHTML = '';
+        const year = current.getFullYear();
+        const month = current.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const startDay = firstDay.getDay();
+
+        monthYear.textContent = `${current.toLocaleString('default', { month: 'long' })} ${year}`;
+
+        for (let i = 0; i < startDay; i++) {
+            calendar.appendChild(document.createElement('div'));
+        }
+
+        for (let day = 1; day <= lastDay.getDate(); day++) {
+            const pad = n => n.toString().padStart(2, '0');
+            const dateStr = `${year}-${pad(month + 1)}-${pad(day)}`;
+            const cell = document.createElement("div");
+            cell.className = "p-2 border text-center text-white";
+            cell.style.cursor = "pointer";
+            cell.textContent = day;
+
+            if (eventDates.has(dateStr)) {
+                cell.classList.add("bg-success", "text-black");
+            }
+
+            cell.onclick = () => {
+                if (currentUserRole === 'teacher') {
+                    // Call backend to toggle event
+                    fetch('/api/toggle-event', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ slug: clubSlug, date: dateStr })
+                    })
+                    .then(res => res.json())
+                    .then(result => {
+                        if (result.success) {
+                            if (result.action === 'added') {
+                                eventDates.add(dateStr);
+                                cell.classList.add("bg-success", "text-black");
+                            } else {
+                                eventDates.delete(dateStr);
+                                cell.classList.remove("bg-success", "text-black");
+                            }
+                        } else {
+                            alert(result.message);
+                        }
+                    });
+                } else {
+                    if (eventDates.has(dateStr)) {
+                        cell.classList.toggle("border-warning");
+                    }
+                }
+            };
+
+            calendar.appendChild(cell);
+        }
+    }
+
+    function changeMonth(delta) {
+        current.setMonth(current.getMonth() + delta);
+        renderCalendar();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+    fetch(`/api/club-events/${clubSlug}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                data.events.forEach(date => eventDates.add(date));
+            }
+            renderCalendar(); // ✅ called only after events are loaded
+        });
+});
+</script>
+{% endblock %}
