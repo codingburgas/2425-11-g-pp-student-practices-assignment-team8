@@ -419,3 +419,40 @@ def toggle_event():
         db.session.commit()
         return jsonify({'success': True, 'action': 'added'})
 
+@main_bp.route('/clubs/<slug>/event/<date>', methods=['GET', 'POST'])
+@login_required
+def edit_event(slug, date):
+    club = Club.query.filter_by(slug=slug).first_or_404()
+    event_date = datetime.strptime(date, '%Y-%m-%d').date()
+
+    club_event = ClubEvent.query.filter_by(club_id=club.id, event_date=event_date).first()
+    if not club_event:
+        abort(404)
+
+    # Create detail if not exists (teachers only)
+    if not club_event.detail and current_user.role == 'teacher':
+        detail = EventDetail()
+        db.session.add(detail)
+        db.session.flush()  # Get ID
+        club_event.detail = detail
+        db.session.commit()
+
+    # 🧍‍♂️ Student view
+    if current_user.role != 'teacher':
+        if not club_event.detail:
+            abort(404)  # No info to show
+        return render_template('event_detail.html', club=club, date=date, event=club_event)
+
+    # 👨‍🏫 Teacher view
+    if request.method == 'POST':
+        data = request.form
+        club_event.detail.description = data.get('description', '')
+        club_event.detail.location = data.get('location', '')
+        club_event.detail.start_time = datetime.strptime(data.get('start_time'), '%H:%M').time()
+        club_event.detail.end_time = datetime.strptime(data.get('end_time'), '%H:%M').time()
+
+        db.session.commit()
+        flash("Event updated successfully.", "success")
+        return redirect(url_for('main_bp.club_calendar', club_slug=slug))
+
+    return render_template('admin/edit_event.html', club=club, date=date, event=club_event)
