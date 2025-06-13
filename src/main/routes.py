@@ -1,9 +1,9 @@
 from datetime import datetime
-from flask import render_template, request, jsonify, abort, redirect, url_for, session
+from flask import render_template, request, jsonify, abort, redirect, url_for, session, flash
 from flask_login import current_user, login_required
 from . import main_bp
 from .. import db
-from .models import ModelInfo, ClubRequest, Club
+from .models import ModelInfo, ClubRequest, Club, EventDetail
 from .perceptron import Perceptron, survey_to_features, get_club_from_index, train_perceptron
 from ..auth.models import User
 from .models import ClubEvent
@@ -421,8 +421,8 @@ def toggle_event():
         default_detail = EventDetail(
             description="This is a scheduled club event. Details will be updated by the teacher.",
             location="Room 101",
-            start_time=datetime.strptime("15:00", "%H:%M").time(),
-            end_time=datetime.strptime("16:00", "%H:%M").time()
+            start_time=datetime.strptime("15:00:00", "%H:%M:%S").time(),
+            end_time=datetime.strptime("16:00:00", "%H:%M:%S").time()
         )
         db.session.add(default_detail)
         db.session.flush()  # Get ID without committing
