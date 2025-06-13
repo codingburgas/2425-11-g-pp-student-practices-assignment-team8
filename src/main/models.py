@@ -30,3 +30,10 @@ club_members = db.Table('club_members',
     db.Column('user_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
     db.Column('club_id', db.Integer, db.ForeignKey('clubs.id'), primary_key=True)
 )
+
+class ClubEvent(db.Model):
+    __tablename__ = 'club_events'
+    id = db.Column(db.Integer, primary_key=True)
+    club_id = db.Column(db.Integer, db.ForeignKey('clubs.id'), nullable=False)
+    event_date = db.Column(db.Date, nullable=False)
+

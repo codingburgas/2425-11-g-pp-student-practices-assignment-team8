@@ -136,7 +136,7 @@
                 {% if not club.is_member %}
                         <a href="{{ url_for('main_bp.club_detail', club_slug=club.slug) }}" class="btn btn-custom">🎉 Take Part In</a>
                 {% else %}
-                        <span class="text-success fw-bold">✔ You're in!</span>
+                        <a href="{{ url_for('main_bp.club_calendar', club_slug=club.slug) }}" class="btn btn-custom">📅 Schedule</a>
                 {% endif %}
             </div>
         </div>

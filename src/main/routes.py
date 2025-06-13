@@ -6,7 +6,7 @@ from .. import db
 from .models import ModelInfo, ClubRequest, Club
 from .perceptron import Perceptron, survey_to_features, get_club_from_index, train_perceptron
 from ..auth.models import User
-
+from .models import ClubEvent
 perceptron = train_perceptron()
 
 
@@ -360,3 +360,62 @@ def search_results():
         results=results,
         current_user=current_user
     )
+
+
+@main_bp.route('/clubs/<club_slug>/calendar')
+@login_required
+def club_calendar(club_slug):
+    club = Club.query.filter_by(slug=club_slug).first()
+    if not club:
+        abort(404)
+
+    # Show calendar only to members or teachers
+    if current_user not in club.users and current_user.role != 'teacher':
+        return redirect(url_for('main_bp.club_detail', club_slug=club_slug))
+
+    return render_template('admin/club_calendar.html', club=club, current_user=current_user)
+
+
+@main_bp.route('/api/club-events/<club_slug>', methods=['GET'])
+@login_required
+def get_club_events(club_slug):
+    club = Club.query.filter_by(slug=club_slug).first()
+    if not club:
+        return jsonify({'success': False, 'message': 'Club not found'}), 404
+
+    events = ClubEvent.query.filter_by(club_id=club.id).all()
+    event_dates = [event.event_date.isoformat() for event in events]
+    return jsonify({'success': True, 'events': event_dates})
+
+
+# API: Toggle event (add/remove) – for teachers only
+@main_bp.route('/api/toggle-event', methods=['POST'])
+@login_required
+def toggle_event():
+    if current_user.role != 'teacher':
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+
+    data = request.get_json()
+    slug = data.get('slug')
+    date_str = data.get('date')
+
+    club = Club.query.filter_by(slug=slug).first()
+    if not club:
+        return jsonify({'success': False, 'message': 'Club not found'}), 404
+
+    try:
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Invalid date format'}), 400
+
+    existing = ClubEvent.query.filter_by(club_id=club.id, event_date=date_obj).first()
+    if existing:
+        db.session.delete(existing)
+        db.session.commit()
+        return jsonify({'success': True, 'action': 'removed'})
+    else:
+        new_event = ClubEvent(club_id=club.id, event_date=date_obj)
+        db.session.add(new_event)
+        db.session.commit()
+        return jsonify({'success': True, 'action': 'added'})
+
