@@ -4,12 +4,24 @@
 {% block content %}
 <div class="container mt-4">
     <h2 class="text-warning">{{ club.name }} - Club Schedule</h2>
+
     <div id="calendar-controls" class="d-flex justify-content-between align-items-center mb-3">
         <button class="btn btn-outline-primary" onclick="changeMonth(-1)">⬅ Prev</button>
         <h4 id="calendar-month-year" class="text-white"></h4>
         <button class="btn btn-outline-primary" onclick="changeMonth(1)">Next ➡</button>
     </div>
+
     <div id="calendar" class="d-grid gap-2" style="grid-template-columns: repeat(7, 1fr);"></div>
+
+    {% if current_user.role == 'teacher' %}
+    <div class="mt-4">
+        <button class="btn btn-warning" onclick="showEventEditor()">📅 Manage Events</button>
+        <div id="event-editor" class="mt-3 d-none text-white">
+            <h5>Marked Dates:</h5>
+            <ul id="event-list" class="list-group"></ul>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 <script>
@@ -44,14 +56,17 @@
             cell.style.cursor = "pointer";
             cell.textContent = day;
 
-            if (eventDates.has(dateStr)) {
+            const isMarked = eventDates.has(dateStr);
+
+            if (isMarked) {
                 cell.classList.add("bg-success", "text-black");
             }
 
             cell.onclick = () => {
                 if (currentUserRole === 'teacher') {
-                    // Call backend to toggle event
-                    fetch('/api/toggle-event', {
+                    // Teachers: toggle the event (add/remove)
+                    const url = '/api/toggle-event';
+                    fetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ slug: clubSlug, date: dateStr })
@@ -61,21 +76,22 @@
                         if (result.success) {
                             if (result.action === 'added') {
                                 eventDates.add(dateStr);
-                                cell.classList.add("bg-success", "text-black");
-                            } else {
+                            } else if (result.action === 'removed') {
                                 eventDates.delete(dateStr);
-                                cell.classList.remove("bg-success", "text-black");
                             }
+                            renderCalendar();
                         } else {
                             alert(result.message);
                         }
                     });
                 } else {
+                    // Students: only open marked events
                     if (eventDates.has(dateStr)) {
-                        cell.classList.toggle("border-warning");
+                        window.location.href = `/clubs/${clubSlug}/event/${dateStr}`;
                     }
                 }
             };
+
 
             calendar.appendChild(cell);
         }
@@ -86,15 +102,44 @@
         renderCalendar();
     }
 
+    function showEventEditor() {
+        const editor = document.getElementById("event-editor");
+        const list = document.getElementById("event-list");
+        list.innerHTML = '';
+
+        if (eventDates.size === 0) {
+            list.innerHTML = '<li class="list-group-item bg-dark text-white">No events scheduled</li>';
+        } else {
+            [...eventDates].sort().forEach(date => {
+                const item = document.createElement("li");
+                item.className = "list-group-item bg-dark d-flex justify-content-between align-items-center";
+
+                const dateSpan = document.createElement("strong");
+                dateSpan.textContent = `📅 ${date}`;
+
+                const link = document.createElement("a");
+                link.href = `/clubs/${clubSlug}/event/${date}`;
+                link.className = "btn btn-sm btn-outline-warning";
+                link.textContent = "Edit";
+
+                item.appendChild(dateSpan);
+                item.appendChild(link);
+                list.appendChild(item);
+            });
+        }
+
+        editor.classList.toggle("d-none");
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
-    fetch(`/api/club-events/${clubSlug}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                data.events.forEach(date => eventDates.add(date));
-            }
-            renderCalendar(); // ✅ called only after events are loaded
-        });
-});
+        fetch(`/api/club-events/${clubSlug}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    data.events.forEach(date => eventDates.add(date));
+                }
+                renderCalendar();
+            });
+    });
 </script>
 {% endblock %}

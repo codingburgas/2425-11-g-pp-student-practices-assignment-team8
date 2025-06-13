@@ -1,9 +1,9 @@
 from datetime import datetime
-from flask import render_template, request, jsonify, abort, redirect, url_for, session
+from flask import render_template, request, jsonify, abort, redirect, url_for, session, flash
 from flask_login import current_user, login_required
 from . import main_bp
 from .. import db
-from .models import ModelInfo, ClubRequest, Club
+from .models import ModelInfo, ClubRequest, Club, EventDetail
 from .perceptron import Perceptron, survey_to_features, get_club_from_index, train_perceptron
 from ..auth.models import User
 from .models import ClubEvent
@@ -388,7 +388,6 @@ def get_club_events(club_slug):
     return jsonify({'success': True, 'events': event_dates})
 
 
-# API: Toggle event (add/remove) – for teachers only
 @main_bp.route('/api/toggle-event', methods=['POST'])
 @login_required
 def toggle_event():
@@ -409,13 +408,68 @@ def toggle_event():
         return jsonify({'success': False, 'message': 'Invalid date format'}), 400
 
     existing = ClubEvent.query.filter_by(club_id=club.id, event_date=date_obj).first()
+
     if existing:
+        # Delete the associated detail if exists
+        if existing.detail:
+            db.session.delete(existing.detail)
         db.session.delete(existing)
         db.session.commit()
         return jsonify({'success': True, 'action': 'removed'})
     else:
-        new_event = ClubEvent(club_id=club.id, event_date=date_obj)
+        # Create default event detail
+        default_detail = EventDetail(
+            description="This is a scheduled club event. Details will be updated by the teacher.",
+            location="Room 101",
+            start_time=datetime.strptime("15:00:00", "%H:%M:%S").time(),
+            end_time=datetime.strptime("16:00:00", "%H:%M:%S").time()
+        )
+        db.session.add(default_detail)
+        db.session.flush()  # Get ID without committing
+
+        new_event = ClubEvent(
+            club_id=club.id,
+            event_date=date_obj,
+            detail_id=default_detail.id
+        )
         db.session.add(new_event)
         db.session.commit()
         return jsonify({'success': True, 'action': 'added'})
 
+@main_bp.route('/clubs/<slug>/event/<date>', methods=['GET', 'POST'])
+@login_required
+def edit_event(slug, date):
+    club = Club.query.filter_by(slug=slug).first_or_404()
+    event_date = datetime.strptime(date, '%Y-%m-%d').date()
+
+    club_event = ClubEvent.query.filter_by(club_id=club.id, event_date=event_date).first()
+    if not club_event:
+        abort(404)
+
+    # Create detail if not exists (teachers only)
+    if not club_event.detail and current_user.role == 'teacher':
+        detail = EventDetail()
+        db.session.add(detail)
+        db.session.flush()  # Get ID
+        club_event.detail = detail
+        db.session.commit()
+
+    # 🧍‍♂️ Student view
+    if current_user.role != 'teacher':
+        if not club_event.detail:
+            abort(404)  # No info to show
+        return render_template('event_detail.html', club=club, date=date, event=club_event)
+
+    # 👨‍🏫 Teacher view
+    if request.method == 'POST':
+        data = request.form
+        club_event.detail.description = data.get('description', '')
+        club_event.detail.location = data.get('location', '')
+        club_event.detail.start_time = datetime.strptime(data.get('start_time'), '%H:%M').time()
+        club_event.detail.end_time = datetime.strptime(data.get('end_time'), '%H:%M').time()
+
+        db.session.commit()
+        flash("Event updated successfully.", "success")
+        return redirect(url_for('main_bp.club_calendar', club_slug=slug))
+
+    return render_template('admin/edit_event.html', club=club, date=date, event=club_event)
