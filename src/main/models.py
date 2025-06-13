@@ -31,9 +31,22 @@ club_members = db.Table('club_members',
     db.Column('club_id', db.Integer, db.ForeignKey('clubs.id'), primary_key=True)
 )
 
+class EventDetail(db.Model):
+    __tablename__ = 'event_details'
+    id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.String(500), default="This is a scheduled club event. Details will be updated by the teacher.")
+    location = db.Column(db.String(100), default="Room 101")
+    start_time = db.Column(db.Time, default=datetime.strptime("15:00:00", "%H:%M:%S").time())
+    end_time = db.Column(db.Time, default=datetime.strptime("16:00:00", "%H:%M:%S").time())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 class ClubEvent(db.Model):
     __tablename__ = 'club_events'
     id = db.Column(db.Integer, primary_key=True)
     club_id = db.Column(db.Integer, db.ForeignKey('clubs.id'), nullable=False)
     event_date = db.Column(db.Date, nullable=False)
+    detail_id = db.Column(db.Integer, db.ForeignKey('event_details.id'), nullable=True)
+
+    detail = db.relationship('EventDetail', backref='club_event', uselist=False)
+
 
