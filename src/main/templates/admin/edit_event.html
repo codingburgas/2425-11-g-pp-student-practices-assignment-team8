@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Edit Event - {{ date }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 text-white">
+    <h2>Edit Event for {{ date }}</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="3">{{ event.detail.description }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label for="location" class="form-label">Location</label>
+            <input type="text" name="location" class="form-control" value="{{ event.detail.location }}">
+        </div>
+        <div class="mb-3">
+            <label for="start_time" class="form-label">Start Time</label>
+            <input type="time" name="start_time" class="form-control" value="{{ event.detail.start_time }}">
+        </div>
+        <div class="mb-3">
+            <label for="end_time" class="form-label">End Time</label>
+            <input type="time" name="end_time" class="form-control" value="{{ event.detail.end_time }}">
+        </div>
+        <button type="submit" class="btn btn-success">💾 Save</button>
+        <a href="{{ url_for('main_bp.club_calendar', club_slug=club.slug) }}" class="btn btn-secondary">Back</a>
+    </form>
+</div>
+{% endblock %}
