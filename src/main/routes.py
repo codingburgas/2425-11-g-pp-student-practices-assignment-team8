@@ -388,7 +388,6 @@ def get_club_events(club_slug):
     return jsonify({'success': True, 'events': event_dates})
 
 
-# API: Toggle event (add/remove) – for teachers only
 @main_bp.route('/api/toggle-event', methods=['POST'])
 @login_required
 def toggle_event():
@@ -409,12 +408,30 @@ def toggle_event():
         return jsonify({'success': False, 'message': 'Invalid date format'}), 400
 
     existing = ClubEvent.query.filter_by(club_id=club.id, event_date=date_obj).first()
+
     if existing:
+        # Delete the associated detail if exists
+        if existing.detail:
+            db.session.delete(existing.detail)
         db.session.delete(existing)
         db.session.commit()
         return jsonify({'success': True, 'action': 'removed'})
     else:
-        new_event = ClubEvent(club_id=club.id, event_date=date_obj)
+        # Create default event detail
+        default_detail = EventDetail(
+            description="This is a scheduled club event. Details will be updated by the teacher.",
+            location="Room 101",
+            start_time=datetime.strptime("15:00", "%H:%M").time(),
+            end_time=datetime.strptime("16:00", "%H:%M").time()
+        )
+        db.session.add(default_detail)
+        db.session.flush()  # Get ID without committing
+
+        new_event = ClubEvent(
+            club_id=club.id,
+            event_date=date_obj,
+            detail_id=default_detail.id
+        )
         db.session.add(new_event)
         db.session.commit()
         return jsonify({'success': True, 'action': 'added'})
