@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <style>
+        .btn-primary {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: black;
+        }
+        .btn-primary:hover {
+            background-color: black !important;
+            border-color: black !important;
+            color: white;
+        }
+        .verify-container {
+            max-width: 500px;
+            margin: 60px auto;
+            background: rgba(0,0,0,0.85);
+            border: 2px solid #ffc107;
+            border-radius: 16px;
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.2);
+            padding: 2.5rem 2rem 2rem 2rem;
+        }
+        .verify-title {
+            color: #ffc107;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .form-label, .form-control {
+            color: #ffc107;
+        }
+        .form-control {
+            background-color: #1f1f1f;
+            border: 1px solid #ffc107;
+        }
+        .form-control:focus {
+            background-color: #1f1f1f;
+            color: #ffc107;
+            border-color: #ffc107;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<div class="verify-container">
+    <h2 class="verify-title">Email Verification</h2>
+    <form method="POST" action="">
+        <div class="mb-3">
+            <label for="email" class="form-label">Enter your email address</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="you@example.com" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Send Verification Code</button>
+    </form>
+</div>
+{% endblock %}
+

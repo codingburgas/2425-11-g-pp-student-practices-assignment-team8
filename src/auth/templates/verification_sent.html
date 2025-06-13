@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+    <style>
+        .code-box {
+            font-size: 28px;
+            font-weight: bold;
+            color: #e67e22;
+            background-color: #fef2e0;
+            padding: 12px 20px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: black;
+        }
+
+        .btn-primary:hover {
+            background-color: black !important;
+            border-color: black !important;
+            color: white;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<div class="container mt-5" style="max-width: 500px;">
+    <h2 class="text-center mb-4">Verification Email Sent</h2>
+
+    <div class="alert alert-success text-center">
+        A verification code has been sent to: <strong>{{ email }}</strong>
+    </div>
+    {% if error %}
+        <div class="error-message">{{ error }}</div>
+    {% endif %}
+    <form method="POST" action="">
+        <div class="mb-3 text-center">
+            <label for="code" class="form-label">Enter the code you received in your Outlook email:</label>
+            <input type="text" class="form-control text-center" id="code" name="code" placeholder="Enter code" required style="max-width: 200px; margin: 0 auto;">
+        </div>
+        <div class="text-center mb-4">
+            <button type="submit" class="btn btn-primary w-100">Verify</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
