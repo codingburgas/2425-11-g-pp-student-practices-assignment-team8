@@ -16,6 +16,21 @@
                             <p class="card-text text-warning fw-bold">👨‍🏫 Head Teacher: {{ club.teacher }}</p>
                             <p class="card-text text-warning fw-bold">{{ club.description }}</p>
                             <a href="{{ url_for('main_bp.club_detail', club_slug=club.slug) }}" class="btn btn-primary">View Details</a>
+                            {% set events = club_events_map[club.slug] %}
+                            {% if events and events|length > 0 %}
+                                <div class="mt-3">
+                                    <h6 class="text-warning">Upcoming Events:</h6>
+                                    <ul class="list-group">
+                                    {% for event in events %}
+                                        <li class="list-group-item bg-dark text-warning mb-1">
+                                            <strong>{{ event.event_date }}</strong>
+                                            {% if event.description %}- {{ event.description }}{% endif %}
+                                            <a href="{{ url_for('main_bp.edit_event', slug=club.slug, date=event.event_date) }}" class="btn btn-sm btn-outline-warning ms-2">View</a>
+                                        </li>
+                                    {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

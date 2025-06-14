@@ -298,12 +298,24 @@ def get_clubs_dict():
 def search_suggestions():
     query = request.args.get('query', '').lower()
 
-    # If no query, return recent searches
+    # If no query, return recent searches and club events for joined clubs
     if not query:
         recent_searches = session.get('recent_searches', [])
+        club_events = []
+        if current_user.is_authenticated:
+            for club in current_user.clubs:
+                events = ClubEvent.query.filter_by(club_id=club.id).order_by(ClubEvent.event_date.asc()).all()
+                for event in events:
+                    club_events.append({
+                        'club_name': club.name,
+                        'club_slug': club.slug,
+                        'event_date': event.event_date.isoformat(),
+                        'description': event.detail.description if event.detail else '',
+                    })
         return jsonify({
             'suggestions': recent_searches[:2],
-            'type': 'recent'
+            'type': 'recent',
+            'club_events': club_events
         })
 
     # Search in clubs
@@ -321,12 +333,26 @@ def search_suggestions():
     if not suggestions:
         return jsonify({
             'suggestions': [],
-            'type': 'no_results'
+            'type': 'no_results',
+            'club_events': []
         })
 
+    # Also include club events for joined clubs if authenticated
+    club_events = []
+    if current_user.is_authenticated:
+        for club in current_user.clubs:
+            events = ClubEvent.query.filter_by(club_id=club.id).order_by(ClubEvent.event_date.asc()).all()
+            for event in events:
+                club_events.append({
+                    'club_name': club.name,
+                    'club_slug': club.slug,
+                    'event_date': event.event_date.isoformat(),
+                    'description': event.detail.description if event.detail else '',
+                })
     return jsonify({
         'suggestions': suggestions,
-        'type': 'results'
+        'type': 'results',
+        'club_events': club_events
     })
 
 @main_bp.route('/search')
@@ -336,28 +362,37 @@ def search_results():
     # Save search to recent searches
     if query:
         recent_searches = session.get('recent_searches', [])
-        # Remove if already exists to avoid duplicates
         if query in recent_searches:
             recent_searches.remove(query)
-        # Add to beginning of list
         recent_searches.insert(0, query)
-        # Keep only the most recent 5 searches
         session['recent_searches'] = recent_searches[:5]
 
-    # Search in clubs
     clubs = get_clubs_dict()
     results = []
-
+    club_events_map = {}
     for slug, club in clubs.items():
         if query.lower() in club['name'].lower() or query.lower() in club['teacher'].lower():
             club_copy = club.copy()
             club_copy['slug'] = slug
             results.append(club_copy)
+            # Fetch events for this club
+            club_obj = Club.query.filter_by(slug=slug).first()
+            if club_obj:
+                events = ClubEvent.query.filter_by(club_id=club_obj.id).order_by(ClubEvent.event_date.asc()).all()
+                club_events_map[slug] = [
+                    {
+                        'event_date': event.event_date.isoformat(),
+                        'description': event.detail.description if event.detail else ''
+                    } for event in events
+                ]
+            else:
+                club_events_map[slug] = []
 
     return render_template(
         'search_results.html',
         query=query,
         results=results,
+        club_events_map=club_events_map,
         current_user=current_user
     )
 

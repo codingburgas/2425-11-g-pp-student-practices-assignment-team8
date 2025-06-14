@@ -369,6 +369,29 @@
                             .then(data => {
                                 suggestionsContainer.innerHTML = '';
 
+                                // Club Events for joined clubs
+                                if (data.club_events && data.club_events.length > 0) {
+                                    const eventsHeader = document.createElement('div');
+                                    eventsHeader.className = 'p-2 text-warning fw-bold';
+                                    eventsHeader.textContent = 'Upcoming Club Events';
+                                    suggestionsContainer.appendChild(eventsHeader);
+                                    data.club_events.forEach(event => {
+                                        const eventDiv = document.createElement('div');
+                                        eventDiv.className = 'dropdown-item py-2 px-3';
+                                        eventDiv.innerHTML = `<div class='fw-bold text-warning'>${event.club_name}</div>` +
+                                            `<div class='small text-warning'>${event.event_date} - ${event.description || 'No description'}</div>`;
+                                        eventDiv.onclick = () => {
+                                            window.location.href = `/clubs/${event.club_slug}/event/${event.event_date}`;
+                                        };
+                                        suggestionsContainer.appendChild(eventDiv);
+                                    });
+                                    // Divider
+                                    const divider = document.createElement('div');
+                                    divider.style.borderTop = '1px solid #ffc10755';
+                                    divider.className = 'my-1';
+                                    suggestionsContainer.appendChild(divider);
+                                }
+
                                 if (data.type === 'no_results') {
                                     // No results found
                                     const noResults = document.createElement('div');
