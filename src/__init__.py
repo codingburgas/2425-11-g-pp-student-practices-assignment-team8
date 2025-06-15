@@ -5,7 +5,6 @@ from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from flask_jwt_extended import JWTManager
-from flask_session import Session
 import os
 
 db = SQLAlchemy()
@@ -13,17 +12,11 @@ bootstrap = Bootstrap()
 login_manager = LoginManager()
 mail = Mail()
 jwt = JWTManager()
-sess = Session()
 
 def create_app(config):
     app = Flask(__name__)
-
-    if isinstance(config, type):
-        config = config()
-    else:
-        config = config
-
     app.config.from_object(config)
+    app.secret_key = os.environ.get('SECRET_KEY')
 
     template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
     app.template_folder = template_dir
@@ -33,13 +26,9 @@ def create_app(config):
     login_manager.init_app(app)
     mail.init_app(app)
     jwt.init_app(app)
-
-    sess.init_app(app)
-
-    login_manager.login_view = 'auth_bp.login'
-    login_manager.login_message = 'Please log in to access this page.'
+    app.config['SESSION_PERMANENT'] = False
+    login_manager.remember_cookie_duration = timedelta(seconds=0)
     login_manager.session_protection = 'strong'
-    login_manager.remember_cookie_duration = timedelta(hours=1)
 
     with app.app_context():
         db.create_all()

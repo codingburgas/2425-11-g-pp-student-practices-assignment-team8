@@ -26,22 +26,20 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user and user.verify_password(form.password.data):
             if not user.is_active:
-                flash('Account not activated.')
-                return redirect(url_for('auth_bp.login'))
+                return redirect(url_for('auth.login'))
+            login_user(user, remember=False)
 
-            login_user(user, remember=form.remember_me.data if hasattr(form, 'remember_me') else False)
 
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('main_bp.index'))
-
+            return redirect(url_for('main_bp.index'))
         flash('Invalid username or password.')
+
     return render_template("login.html", form=form)
 
 @auth_bp.route('/logout')
 @login_required
 def logout():
-    session.clear()
-    return redirect(url_for('auth_bp.login'))
+    logout_user()
+    return redirect(url_for('auth.login'))
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -119,18 +117,3 @@ def verify():
             return redirect(url_for("auth.verify"))
 
     return render_template("verify.html")
-
-@auth_bp.route('/debug_session')
-@login_required
-def debug_session():
-    from flask import session, current_app
-
-    debug_info = {
-        'session_data': dict(session),
-        'current_user': current_user.username if current_user.is_authenticated else 'Not authenticated',
-        'session_type': current_app.config.get('SESSION_TYPE'),
-        'is_azure': current_app.config.get('WEBSITE_SITE_NAME') is not None,
-        'session_file_dir': current_app.config.get('SESSION_FILE_DIR', 'Not set')
-    }
-
-    return f"<pre>{debug_info}</pre>"

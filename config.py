@@ -5,12 +5,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    SECRET_KEY = os.getenv('SECRET_KEY') or 'your-secret-key-here'
+    SECRET_KEY = os.getenv('SECRET_KEY')
+    SESSION_TYPE = 'null'
     SESSION_PERMANENT = True
     PERMANENT_SESSION_LIFETIME = timedelta(hours=1)
     SESSION_USE_SIGNER = True
-    SESSION_KEY_PREFIX = 'eduAlign:'
-    SESSION_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
 
@@ -37,27 +37,3 @@ class Config:
     JWT_TOKEN_LOCATION = ['headers']
     JWT_HEADER_NAME = 'Authorization'
     JWT_HEADER_TYPE = 'Bearer'
-
-    @property
-    def is_azure(self):
-        return os.environ.get('WEBSITE_SITE_NAME') is not None
-
-    if os.environ.get('WEBSITE_SITE_NAME'):
-        redis_url = os.environ.get('REDIS_URL')
-        if redis_url:
-            SESSION_TYPE = 'redis'
-            try:
-                import redis
-                SESSION_REDIS = redis.from_url(redis_url)
-            except ImportError:
-                SESSION_TYPE = 'filesystem'
-                SESSION_FILE_DIR = '/tmp/flask_session'
-        else:
-            SESSION_TYPE = 'filesystem'
-            SESSION_FILE_DIR = '/tmp/flask_session'
-
-        SESSION_COOKIE_SECURE = True
-    else:
-        SESSION_TYPE = 'filesystem'
-        SESSION_FILE_DIR = './flask_session'
-        SESSION_COOKIE_SECURE = False
