@@ -40,8 +40,8 @@ def login():
 @auth_bp.route('/logout')
 @login_required
 def logout():
-    logout_user()
-    return redirect(url_for('auth.login'))
+    session.clear()
+    return redirect(url_for('auth_bp.login'))
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -119,3 +119,18 @@ def verify():
             return redirect(url_for("auth.verify"))
 
     return render_template("verify.html")
+
+@auth_bp.route('/debug_session')
+@login_required
+def debug_session():
+    from flask import session, current_app
+
+    debug_info = {
+        'session_data': dict(session),
+        'current_user': current_user.username if current_user.is_authenticated else 'Not authenticated',
+        'session_type': current_app.config.get('SESSION_TYPE'),
+        'is_azure': current_app.config.get('WEBSITE_SITE_NAME') is not None,
+        'session_file_dir': current_app.config.get('SESSION_FILE_DIR', 'Not set')
+    }
+
+    return f"<pre>{debug_info}</pre>"

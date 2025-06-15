@@ -13,22 +13,28 @@ bootstrap = Bootstrap()
 login_manager = LoginManager()
 mail = Mail()
 jwt = JWTManager()
+sess = Session()
 
 def create_app(config):
     app = Flask(__name__)
+
+    if isinstance(config, type):
+        config = config()
+    else:
+        config = config
+
     app.config.from_object(config)
 
     template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
     app.template_folder = template_dir
 
     db.init_app(app)
-    app.config['SESSION_SQLALCHEMY'] = db
     bootstrap.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
     jwt.init_app(app)
 
-    Session(app)
+    sess.init_app(app)
 
     login_manager.login_view = 'auth_bp.login'
     login_manager.login_message = 'Please log in to access this page.'
