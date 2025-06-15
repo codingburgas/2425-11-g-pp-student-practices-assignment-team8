@@ -26,13 +26,15 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user and user.verify_password(form.password.data):
             if not user.is_active:
-                return redirect(url_for('auth.login'))
-            login_user(user, remember=False)
+                flash('Account not activated.')
+                return redirect(url_for('auth_bp.login'))
 
+            login_user(user, remember=form.remember_me.data if hasattr(form, 'remember_me') else False)
 
-            return redirect(url_for('main_bp.index'))
+            next_page = request.args.get('next')
+            return redirect(next_page) if next_page else redirect(url_for('main_bp.index'))
+
         flash('Invalid username or password.')
-
     return render_template("login.html", form=form)
 
 @auth_bp.route('/logout')

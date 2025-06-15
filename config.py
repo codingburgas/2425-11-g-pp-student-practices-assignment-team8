@@ -5,11 +5,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    SECRET_KEY = os.getenv('SECRET_KEY')
-    SESSION_TYPE = 'null'
-    SESSION_PERMANENT = True
-    PERMANENT_SESSION_LIFETIME = 3600
+    SECRET_KEY = os.getenv('SECRET_KEY') or 'your-secret-key-here'
+    SESSION_TYPE = 'sqlalchemy'
+    SESSION_PERMANENT = False
+    PERMANENT_SESSION_LIFETIME = timedelta(hours=1)
     SESSION_USE_SIGNER = True
+    SESSION_KEY_PREFIX = 'eduAlign:'
+    SESSION_COOKIE_SECURE = False
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
 
     # Azure SQL Database connection
     DB_USER = os.getenv('DB_USER')
@@ -34,7 +38,3 @@ class Config:
     JWT_TOKEN_LOCATION = ['headers']
     JWT_HEADER_NAME = 'Authorization'
     JWT_HEADER_TYPE = 'Bearer'
-
-    SESSION_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = 'Lax'
