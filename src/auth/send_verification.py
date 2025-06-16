@@ -5,6 +5,7 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from dotenv import load_dotenv
 
+
 # Load environment variables
 load_dotenv()
 
@@ -14,7 +15,6 @@ app.secret_key = os.getenv("SECRET_KEY")
 
 def generate_verification_code() -> int:
     return random.randint(100000, 999999)
-
 
 def send_verification_email(to_email: str, code: int) -> bool:
     """Sends the verification email using SendGrid."""
@@ -31,3 +31,5 @@ def send_verification_email(to_email: str, code: int) -> bool:
     except Exception as e:
         print(f"SendGrid error: {str(e)}")
         return False
+
+
