@@ -1,7 +1,6 @@
 import requests
 import json
 
-# Base URL - change this to your server's address when deployed
 BASE_URL = "http://localhost:5000/api/auth"
 
 def test_register():
@@ -13,8 +12,7 @@ def test_register():
         "username": "testuser",
         "password": "testpassword"
     }
-    
-    # Send request
+
     response = requests.post(f"{BASE_URL}/register", json=data)
     
     # Print results
@@ -26,8 +24,7 @@ def test_register():
 def test_login(username="testuser", password="testpassword"):
     """Test user login"""
     print("\n--- Testing Login ---")
-    
-    # Test data
+
     data = {
         "username": username,
         "password": password
@@ -78,17 +75,12 @@ def test_refresh_token(refresh_token):
 
 def run_tests():
     """Run all tests in sequence"""
-    # Try to register a new user
     register_result = test_register()
-    
-    # Login (will work even if registration failed due to existing user)
     login_result = test_login()
     
     if login_result:
-        # Test protected endpoint with access token
         test_protected_endpoint(login_result["access_token"])
-        
-        # Test refresh token
+
         new_access_token = test_refresh_token(login_result["refresh_token"])
         
         if new_access_token:
