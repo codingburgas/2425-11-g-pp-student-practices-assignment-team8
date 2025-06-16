@@ -22,6 +22,10 @@
         </div>
     </div>
     {% endif %}
+
+    <div class="mt-4">
+        <a href="{{ url_for('main_bp.club_participants', club_slug=club.slug) }}" class="btn btn-primary">See Participants</a>
+    </div>
 </div>
 
 <script>

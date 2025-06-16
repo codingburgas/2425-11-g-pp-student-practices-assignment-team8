@@ -7,28 +7,36 @@ from ..auth.forms import ProfileForm
 from ..auth.models import User
 
 
-@prof_bp.route("/settings")
+@prof_bp.route("/settings", methods=['GET', 'POST'])
 def settings():
-    return render_template("dashboard.html", current_user=current_user)
-@prof_bp.route('/profile', methods=['GET', 'POST'])
-
-def profile():
     form = ProfileForm(obj=current_user)
 
     if form.validate_on_submit():
         if current_user.username != form.username.data:
             if db.session.query(User).filter_by(username=form.username.data).first():
                 flash("Username already taken.")
-                return redirect(url_for('profile.profile'))
+                return redirect(url_for('profile.settings'))
             current_user.username = form.username.data
 
         current_user.password = form.password.data
 
         db.session.commit()
         flash("Profile updated.")
-        return redirect(url_for('profile.profile'))
+        return redirect(url_for('profile.settings'))
 
     return render_template("dashboard.html", form=form, current_user=current_user)
+
+@prof_bp.route('/profile')
+def profile():
+    user = current_user
+    clubs = user.clubs if hasattr(user, 'clubs') else []
+    return render_template('public_profile.html', user=user, clubs=clubs)
+
+@prof_bp.route('/user/<int:user_id>')
+def public_profile(user_id):
+    user = User.query.get_or_404(user_id)
+    clubs = user.clubs if hasattr(user, 'clubs') else []
+    return render_template('public_profile.html', user=user, clubs=clubs)
 
 @prof_bp.route("/clients")
 def view_clients():

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-5">
+    <div class="card bg-black text-warning p-4">
+        <h2 class="mb-3">User Profile</h2>
+        <p><strong>Username:</strong> {{ user.username }}</p>
+        <h4 class="mt-4">Clubs</h4>
+        {% if clubs %}
+            <ul class="list-group list-group-flush">
+                {% for club in clubs %}
+                <li class="list-group-item bg-dark text-warning">
+                    <a href="{{ url_for('main_bp.club_detail', club_slug=club.slug) }}" class="text-warning">{{ club.name if club.name else club.slug }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>This user is not a member of any clubs.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

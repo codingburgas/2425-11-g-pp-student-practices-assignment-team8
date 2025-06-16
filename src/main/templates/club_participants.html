@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-5">
+    <div class="card bg-black text-warning p-4">
+        <h2 class="mb-3">Participants in {{ club.name }}</h2>
+        {% if participants %}
+            <ul class="list-group list-group-flush">
+                {% for user in participants %}
+                <li class="list-group-item bg-dark text-warning">
+                    <a href="{{ url_for('profile.public_profile', user_id=user.id) }}" class="text-warning">{{ user.username }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No participants yet.</p>
+        {% endif %}
+        <a href="{{ url_for('main_bp.club_calendar', club_slug=club.slug) }}" class="btn btn-outline-primary mt-3">Back to Calendar</a>
+    </div>
+</div>
+{% endblock %}
+

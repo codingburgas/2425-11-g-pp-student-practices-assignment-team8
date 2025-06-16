@@ -510,3 +510,10 @@ def edit_event(slug, date):
         return redirect(url_for('main_bp.club_calendar', club_slug=slug))
 
     return render_template('admin/edit_event.html', club=club, date=date, event=club_event)
+
+@main_bp.route('/clubs/<club_slug>/participants')
+@login_required
+def club_participants(club_slug):
+    club = Club.query.filter_by(slug=club_slug).first_or_404()
+    participants = club.users
+    return render_template('club_participants.html', club=club, participants=participants)
