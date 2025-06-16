@@ -23,7 +23,7 @@ class User(db.Model, UserMixin):
         return bcrypt.checkpw(password.encode('utf-8'), self.__password.encode('utf-8'))
 
 
-
+#Training
 class TrainingResults(db.Model):
     __tablename__ = 'training_results'
     id = db.Column(db.Integer, primary_key=True)
