@@ -127,10 +127,8 @@
                 list.appendChild(item);
             });
         }
-
         editor.classList.toggle("d-none");
     }
-
     document.addEventListener("DOMContentLoaded", () => {
         fetch(`/api/club-events/${clubSlug}`)
             .then(response => response.json())
