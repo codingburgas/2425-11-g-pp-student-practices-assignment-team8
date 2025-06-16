@@ -7,7 +7,6 @@ from ..auth.forms import ProfileForm
 from ..auth.models import User
 
 
-
 @prof_bp.route("/settings")
 def settings():
     return render_template("dashboard.html", current_user=current_user)
@@ -30,6 +29,7 @@ def profile():
         return redirect(url_for('profile.profile'))
 
     return render_template("dashboard.html", form=form, current_user=current_user)
+
 @prof_bp.route("/clients")
 def view_clients():
     if not current_user.is_authenticated or (current_user.role != 'developer' and current_user.role != 'teacher'):
@@ -69,6 +69,7 @@ def promote_page():
 
     users = User.query.filter(User.role != 'developer').all()
     return render_template("promote.html", users=users)
+
 @prof_bp.route('/edit_user/<int:user_id>', methods=['POST'])
 def edit_user(user_id):
     if not current_user.is_authenticated or (current_user.role != 'developer' and current_user.role != 'teacher'):
