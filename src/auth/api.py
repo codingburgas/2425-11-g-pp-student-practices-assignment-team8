@@ -6,7 +6,6 @@ from flask_jwt_extended import (
 from .models import User
 from .. import db
 
-# Create a Blueprint for API routes
 auth_api_bp = Blueprint('auth_api', __name__)
 
 @auth_api_bp.route('/login', methods=['POST'])
@@ -103,9 +102,7 @@ def refresh():
 @auth_api_bp.route('/protected', methods=['GET'])
 @jwt_required()
 def protected():
-    """
-    Example of a protected API endpoint that requires JWT authentication
-    """
+
     current_user_id = get_jwt_identity()
     user = User.query.get(current_user_id)
     
