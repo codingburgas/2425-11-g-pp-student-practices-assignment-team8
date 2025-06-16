@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Services - Review Your Survey & Suggestions{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4 text-warning">Review Your Survey Answers</h2>
+    {% if survey_answers %}
+        <div class="card bg-dark text-warning mb-4 p-4">
+            <h5>Your Last Survey Responses:</h5>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item bg-dark text-warning">Enjoy Activities: <strong>{{ survey_answers.enjoy_activities|capitalize }}</strong></li>
+                <li class="list-group-item bg-dark text-warning">Enjoy Sports: <strong>{{ survey_answers.enjoy_sports|capitalize }}</strong></li>
+                <li class="list-group-item bg-dark text-warning">Enjoy Art: <strong>{{ survey_answers.enjoy_art|capitalize }}</strong></li>
+                <li class="list-group-item bg-dark text-warning">Enjoy Science: <strong>{{ survey_answers.enjoy_science|capitalize }}</strong></li>
+                <li class="list-group-item bg-dark text-warning">Enjoy Clubs: <strong>{{ survey_answers.enjoy_clubs|capitalize }}</strong></li>
+                <li class="list-group-item bg-dark text-warning">Enjoy Field Trips: <strong>{{ survey_answers.enjoy_fieldtrips|capitalize }}</strong></li>
+                <li class="list-group-item bg-dark text-warning">Overall Satisfied: <strong>{{ survey_answers.overall_satisfied|capitalize }}</strong></li>
+                <li class="list-group-item bg-dark text-warning">More Resources: <strong>{{ survey_answers.more_resources|capitalize }}</strong></li>
+                <li class="list-group-item bg-dark text-warning">Recommend: <strong>{{ survey_answers.recommend|capitalize }}</strong></li>
+                <li class="list-group-item bg-dark text-warning">Enjoy Math: <strong>{{ survey_answers.enjoy_math|capitalize }}</strong></li>
+            </ul>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">You have not completed the survey yet. <a href="{{ url_for('main_bp.poll') }}" class="text-warning">Take the survey now</a>.</div>
+    {% endif %}
+
+    <h2 class="mb-4 text-warning">Your Club Suggestion</h2>
+    {% if recommended_club %}
+        <div class="card bg-black text-warning p-4 mb-4">
+            <div class="d-flex align-items-center">
+                <img src="{{ url_for('static', filename='images/' + recommended_club.image) }}" alt="{{ recommended_club.name }}" style="width:120px; height:90px; object-fit:cover; border-radius:10px; border:2px solid #ffc107; margin-right:20px;">
+                <div>
+                    <h4 class="mb-1">{{ recommended_club.name }}</h4>
+                    <p class="mb-1">👨‍🏫 Teacher: {{ recommended_club.teacher }}</p>
+                    <p class="mb-1">{{ recommended_club.description }}</p>
+                    <a href="{{ url_for('main_bp.club_detail', club_slug=recommended_club.slug) }}" class="btn btn-primary mt-2">View Club Details</a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">No club suggestion available. <a href="{{ url_for('main_bp.poll') }}" class="text-warning">Take the survey</a> to get a recommendation.</div>
+    {% endif %}
+</div>
+{% endblock %}
+

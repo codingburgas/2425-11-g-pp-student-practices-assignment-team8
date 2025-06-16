@@ -116,9 +116,7 @@
             </a>
             
             {% if current_user.is_authenticated %}
-            <button class="btn btn-outline-secondary join-club-btn" data-club="{{ club.name }}">
-                Request to Join
-            </button>
+            <button id="joinBtn" class="btn btn-outline-secondary" {% if club.is_full %}disabled{% endif %}>Request to Join</button>
             {% else %}
             <a href="{{ url_for('auth_bp.login') }}" class="btn btn-outline-secondary">
                 Login to Join
@@ -136,38 +134,31 @@
 
 {% if current_user.is_authenticated %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const joinButtons = document.querySelectorAll('.join-club-btn');
-        
-        joinButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const clubName = this.getAttribute('data-club');
-                
-                fetch('{{ url_for("main_bp.join_club") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
+    document.addEventListener("DOMContentLoaded", () => {
+      const joinBtn = document.getElementById("joinBtn");
+      if (joinBtn) {
+        joinBtn.addEventListener("click", () => {
+          fetch('{{ url_for("main_bp.join_club") }}', {
+            method: 'POST',
+            headers: {
+                      'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        club_name: clubName
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Request to join club submitted successfully!');
-                        this.disabled = true;
-                        this.textContent = 'Request Submitted';
-                    } else {
-                        alert(data.message || 'Error submitting request');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred. Please try again.');
-                });
-            });
+            body: JSON.stringify({
+              slug: '{{ club.slug }}'
+              })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert('Request sent successfully!');
+              joinBtn.disabled = true;
+              joinBtn.textContent = 'Request Pending';
+            } else {
+              alert(data.message);
+            }
+          });
         });
+      }
     });
 </script>
 {% endif %}

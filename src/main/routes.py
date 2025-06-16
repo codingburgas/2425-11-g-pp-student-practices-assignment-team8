@@ -94,6 +94,9 @@ def poll():
             'enjoy_math': request.form.get('enjoy_math', 'false')
         }
 
+        # Store survey answers in session for review in services page
+        session['last_survey_answers'] = survey_data
+
         # Convert survey data to feature vector
         features = survey_to_features(survey_data)
 
@@ -113,7 +116,9 @@ def poll():
 
 @main_bp.route('/services')
 def services():
-    return render_template("base.html", current_user=current_user)
+    survey_answers = session.get('last_survey_answers')
+    recommended_club = session.get('recommended_club')
+    return render_template("services.html", current_user=current_user, survey_answers=survey_answers, recommended_club=recommended_club)
 
 @main_bp.route('/profile')
 def profile():
