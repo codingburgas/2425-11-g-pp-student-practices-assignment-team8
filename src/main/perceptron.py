@@ -83,7 +83,7 @@ class Perceptron:
         Returns:
             The saved ModelInfo object
         """
-        # Convert weights to JSON string
+
         weights_json = json.dumps(self.weights.tolist())
         
         # Create parameters dictionary
@@ -93,20 +93,17 @@ class Perceptron:
             "learning_rate": self.learning_rate,
             "epochs": self.epochs
         }
-        
-        # Convert parameters to JSON string
+
         parameters_json = json.dumps(parameters)
-        
-        # Create new model info record
+
         model_info = ModelInfo(
             weights=weights_json,
             username=username,
             modelName=model_name,
-            accuracy=0.0,  # We don't have accuracy for this model
+            accuracy=0.0,
             parameters=parameters_json
         )
-        
-        # Save to database
+
         db.session.add(model_info)
         db.session.commit()
         
