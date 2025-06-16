@@ -89,9 +89,6 @@ def api_register():
 @auth_api_bp.route('/refresh', methods=['POST'])
 @jwt_required(refresh=True)
 def refresh():
-    """
-    API endpoint to refresh access token using refresh token
-    """
     current_user_id = get_jwt_identity()
     access_token = create_access_token(identity=current_user_id)
     
