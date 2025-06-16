@@ -9,7 +9,6 @@ from ..auth.models import User
 from .models import ClubEvent
 perceptron = train_perceptron()
 
-
 @main_bp.route('/')
 def index():
     clubs_dict = get_clubs_dict()
@@ -363,8 +362,6 @@ def search_suggestions():
 @main_bp.route('/search')
 def search_results():
     query = request.args.get('query', '')
-
-    # Save search to recent searches
     if query:
         recent_searches = session.get('recent_searches', [])
         if query in recent_searches:
