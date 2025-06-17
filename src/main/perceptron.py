@@ -30,18 +30,25 @@ class Perceptron:
         """
         # Add bias term to inputs
         X_with_bias = np.hstack((X, np.ones((X.shape[0], 1))))
-        
+        self.error_history = []
+        self.loss_history = []
         for epoch in range(self.epochs):
             # Forward pass
             outputs = self.predict_raw(X_with_bias)
-            
             # Compute error
             error = y - outputs
-            
             # Update weights
             delta = self.learning_rate * np.dot(error.T, X_with_bias)
             self.weights += delta
-            
+            # Calculate misclassification error (number of wrong predictions)
+            y_pred = np.argmax(outputs, axis=1)
+            y_true = np.argmax(y, axis=1)
+            misclassified = np.sum(y_pred != y_true)
+            self.error_history.append(int(misclassified))
+            # Calculate mean squared error (loss)
+            mse = np.mean((y - outputs) ** 2)
+            self.loss_history.append(float(mse))
+
     def predict_raw(self, X_with_bias):
         """
         Make raw predictions (before applying activation function).
@@ -111,12 +118,16 @@ class Perceptron:
             "epochs": self.epochs
         }
         parameters_json = json.dumps(parameters)
+        error_history_json = json.dumps(getattr(self, 'error_history', []))
+        loss_history_json = json.dumps(getattr(self, 'loss_history', []))
         training_result = TrainingResults(
             user_id=user_id,
             model_name="perceptron",
             weights=weights_json,
             accuracy=accuracy,
-            parameters=parameters_json
+            parameters=parameters_json,
+            error_history=error_history_json,
+            loss_history=loss_history_json
         )
 
         db.session.add(training_result)

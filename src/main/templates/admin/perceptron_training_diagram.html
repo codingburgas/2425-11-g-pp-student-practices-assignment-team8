@@ -14,26 +14,35 @@
                         <th>Model Name</th>
                         <th>Username</th>
                         <th>Accuracy</th>
+                        <th>View Error/Loss</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for result in results %}
                     <tr>
-                        <td>{{ result.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>{{ result.created_at }}</td>
                         <td>{{ result.model_name }}</td>
                         <td>{{ result.username }}</td>
                         <td>{{ '%.2f'|format(result.accuracy * 100) }}%</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-warning" onclick="showErrorLoss({{ loop.index0 }})">Show</button>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+    <div class="mt-4">
+        <h4 class="text-warning">Error & Loss per Epoch</h4>
+        <canvas id="errorLossChart" height="80"></canvas>
+    </div>
     <a href="{{ url_for('main_bp.index') }}" class="btn btn-outline-primary mt-3">Back to Home</a>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const diagramData = {{ diagram_data|tojson }};
+    const results = {{ results|tojson }};
     const ctx = document.getElementById('accuracyChart').getContext('2d');
     const labels = diagramData.map(d => d.x);
     const data = diagramData.map(d => d.y * 100);
@@ -69,5 +78,57 @@
             }
         }
     });
+
+    // Error & Loss chart
+    const errorLossCtx = document.getElementById('errorLossChart').getContext('2d');
+    let errorLossChart = null;
+    function showErrorLoss(idx) {
+        const result = results[idx];
+        let errorHistory = [];
+        let lossHistory = [];
+        try {
+            errorHistory = JSON.parse(result.error_history || '[]');
+            lossHistory = JSON.parse(result.loss_history || '[]');
+        } catch (e) {}
+        const epochs = Array.from({length: errorHistory.length}, (_, i) => i+1);
+        if (errorLossChart) errorLossChart.destroy();
+        errorLossChart = new Chart(errorLossCtx, {
+            type: 'line',
+            data: {
+                labels: epochs,
+                datasets: [
+                    {
+                        label: 'Error (misclassified)',
+                        data: errorHistory,
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        fill: true,
+                        tension: 0.2,
+                        pointRadius: 2,
+                    },
+                    {
+                        label: 'Loss (MSE)',
+                        data: lossHistory,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        fill: true,
+                        tension: 0.2,
+                        pointRadius: 2,
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Value' } },
+                    x: { title: { display: true, text: 'Epoch' } }
+                },
+                plugins: {
+                    legend: { labels: { color: '#ffc107' } }
+                }
+            }
+        });
+    }
+    // Show the latest by default
+    if (results.length > 0) showErrorLoss(results.length - 1);
 </script>
 {% endblock %}

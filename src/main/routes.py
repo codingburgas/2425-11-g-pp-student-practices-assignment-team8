@@ -560,20 +560,30 @@ def perceptron_training_diagram():
     from ..auth.models import TrainingResults, User
     results = TrainingResults.query.order_by(TrainingResults.created_at.asc()).all()
     # Attach username and force model_name for each result
+    results_serialized = []
     for result in results:
         user = User.query.get(result.user_id) if result.user_id else None
-        result.username = user.username if user else 'Unknown'
-        result.model_name = 'perceptron'
+        username = user.username if user else 'Unknown'
+        model_name = 'perceptron'
+        results_serialized.append({
+            'id': result.id,
+            'created_at': result.created_at.strftime('%Y-%m-%d %H:%M:%S') if result.created_at else '',
+            'model_name': model_name,
+            'username': username,
+            'accuracy': result.accuracy,
+            'error_history': result.error_history,
+            'loss_history': result.loss_history
+        })
     diagram_data = [
         {
             'x': result.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'y': result.accuracy or 0.0,
-            'model': result.model_name,
-            'username': result.username
+            'model': 'perceptron',
+            'username': User.query.get(result.user_id).username if result.user_id else 'Unknown'
         }
         for result in results
     ]
-    return render_template('admin/perceptron_training_diagram.html', diagram_data=diagram_data, results=results, current_user=current_user)
+    return render_template('admin/perceptron_training_diagram.html', diagram_data=diagram_data, results=results_serialized, current_user=current_user)
 
 def retrain_and_save_model_with_user_data(user_id):
     """
