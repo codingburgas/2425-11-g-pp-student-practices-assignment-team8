@@ -165,7 +165,14 @@
         /* Optional: Style placeholder text if needed */
         .form-control::placeholder {
             color: var(--muted); /* lighter gray for placeholder */
-    }
+        }
+
+        #search-suggestions {
+            max-height: 300px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            width: 100%;
+        }
 
 
     </style>
@@ -221,7 +228,7 @@
                         <button class="btn rounded-end" type="submit">
                             <i class="bi bi-search"></i>
                         </button>
-                        <div id="search-suggestions" class="position-absolute w-100 mt-1 overflow-hidden" style="top: 100%; left: 0; z-index: 1000; display: none; background-color: var(--surface); border: 1px solid var(--primary); max-height: 300px; overflow-y: auto; border-radius: 15px;">
+                        <div id="search-suggestions" class="position-absolute mt-1" style="top: 100%; left: 0; z-index: 1000; background-color: var(--surface); border: 1px solid var(--primary); border-radius: 15px; display: none; width: 100%; max-height: 300px; overflow-y: auto; overflow-x: hidden;">
                         </div>
                     </div>
                 </form>
@@ -369,29 +376,6 @@
                             .then(data => {
                                 suggestionsContainer.innerHTML = '';
 
-                                // Club Events for joined clubs
-                                if (data.club_events && data.club_events.length > 0) {
-                                    const eventsHeader = document.createElement('div');
-                                    eventsHeader.className = 'p-2 text-warning fw-bold';
-                                    eventsHeader.textContent = 'Upcoming Club Events';
-                                    suggestionsContainer.appendChild(eventsHeader);
-                                    data.club_events.forEach(event => {
-                                        const eventDiv = document.createElement('div');
-                                        eventDiv.className = 'dropdown-item py-2 px-3';
-                                        eventDiv.innerHTML = `<div class='fw-bold text-warning'>${event.club_name}</div>` +
-                                            `<div class='small text-warning'>${event.event_date} - ${event.description || 'No description'}</div>`;
-                                        eventDiv.onclick = () => {
-                                            window.location.href = `/clubs/${event.club_slug}/event/${event.event_date}`;
-                                        };
-                                        suggestionsContainer.appendChild(eventDiv);
-                                    });
-                                    // Divider
-                                    const divider = document.createElement('div');
-                                    divider.style.borderTop = '1px solid #ffc10755';
-                                    divider.className = 'my-1';
-                                    suggestionsContainer.appendChild(divider);
-                                }
-
                                 if (data.type === 'no_results') {
                                     // No results found
                                     const noResults = document.createElement('div');
@@ -401,13 +385,13 @@
                                     suggestionsContainer.style.display = 'block';
                                 } 
                                 else if (data.type === 'recent' && data.suggestions.length > 0) {
-                                    // Recent searches
+                                    // Recent searches (show only 2)
                                     const recentHeader = document.createElement('div');
                                     recentHeader.className = 'p-2 text-warning fw-bold';
                                     recentHeader.textContent = 'Recent Searches';
                                     suggestionsContainer.appendChild(recentHeader);
 
-                                    data.suggestions.forEach(search => {
+                                    data.suggestions.slice(0,2).forEach(search => {
                                         const item = document.createElement('a');
                                         item.className = 'dropdown-item py-2 px-3';
                                         item.href = `/search?query=${encodeURIComponent(search)}`;
@@ -418,26 +402,79 @@
                                     suggestionsContainer.style.display = 'block';
                                 }
                                 else if (data.type === 'results') {
-                                    // Club results
-                                    data.suggestions.forEach(club => {
-                                        const item = document.createElement('a');
-                                        item.className = 'dropdown-item py-2 px-3';
-                                        item.href = `/clubs/${club.slug}`;
+                                    // First show matching events if available
+                                    if (data.club_events && data.club_events.length > 0) {
+                                        const eventsHeader = document.createElement('div');
+                                        eventsHeader.className = 'p-2 text-warning fw-bold';
+                                        eventsHeader.textContent = 'Upcoming Events';
+                                        suggestionsContainer.appendChild(eventsHeader);
 
-                                        const nameSpan = document.createElement('div');
-                                        nameSpan.className = 'fw-bold text-warning';
-                                        nameSpan.textContent = club.name;
+                                        data.club_events.forEach(event => {
+                                            const eventDiv = document.createElement('a');
+                                            eventDiv.className = 'dropdown-item py-2 px-3';
+                                            eventDiv.href = `/clubs/${event.club_slug}/event/${event.event_date}`;
 
-                                        const teacherSpan = document.createElement('div');
-                                        teacherSpan.className = 'small text-warning fw-bold';
-                                        teacherSpan.textContent = `Teacher: ${club.teacher}`;
+                                            const clubNameDiv = document.createElement('div');
+                                            clubNameDiv.className = 'fw-bold text-warning';
+                                            clubNameDiv.textContent = event.club_name;
 
-                                        item.appendChild(nameSpan);
-                                        item.appendChild(teacherSpan);
-                                        suggestionsContainer.appendChild(item);
-                                    });
+                                            const eventDetailsDiv = document.createElement('div');
+                                            eventDetailsDiv.className = 'small text-warning';
+                                            eventDetailsDiv.textContent = `${event.event_date} - ${event.description || 'No description'}`;
 
-                                    suggestionsContainer.style.display = 'block';
+                                            eventDiv.appendChild(clubNameDiv);
+                                            eventDiv.appendChild(eventDetailsDiv);
+                                            suggestionsContainer.appendChild(eventDiv);
+                                        });
+
+                                        // Add a divider between events and clubs if both exist
+                                        if (data.suggestions.length > 0) {
+                                            const divider = document.createElement('div');
+                                            divider.className = 'dropdown-divider my-2';
+                                            divider.style.borderTop = '1px solid #ffc10755';
+                                            suggestionsContainer.appendChild(divider);
+                                        }
+                                    }
+
+                                    // Then show club results
+                                    if (data.suggestions.length > 0) {
+                                        const clubsHeader = document.createElement('div');
+                                        clubsHeader.className = 'p-2 text-warning fw-bold';
+                                        clubsHeader.textContent = 'Clubs';
+                                        suggestionsContainer.appendChild(clubsHeader);
+
+                                        data.suggestions.forEach(club => {
+                                            const item = document.createElement('a');
+                                            item.className = 'dropdown-item py-2 px-3';
+                                            // If user is a member, go to calendar, else go to detail
+                                            let isMember = false;
+                                            if (window.currentUserClubs && Array.isArray(window.currentUserClubs)) {
+                                                isMember = window.currentUserClubs.includes(club.slug);
+                                            }
+                                            if (isMember) {
+                                                item.href = `/clubs/${club.slug}/calendar`;
+                                            } else {
+                                                item.href = `/clubs/${club.slug}`;
+                                            }
+
+                                            const nameSpan = document.createElement('div');
+                                            nameSpan.className = 'fw-bold text-warning';
+                                            nameSpan.textContent = club.name;
+
+                                            const teacherSpan = document.createElement('div');
+                                            teacherSpan.className = 'small text-warning fw-bold';
+                                            teacherSpan.textContent = `Teacher: ${club.teacher}`;
+
+                                            item.appendChild(nameSpan);
+                                            item.appendChild(teacherSpan);
+                                            suggestionsContainer.appendChild(item);
+                                        });
+                                    }
+
+                                    // If we have either events or clubs, show the container
+                                    if (data.club_events.length > 0 || data.suggestions.length > 0) {
+                                        suggestionsContainer.style.display = 'block';
+                                    }
                                 }
                                 else {
                                     suggestionsContainer.style.display = 'none';
@@ -449,13 +486,18 @@
                     }, 300); // Debounce delay
                 };
 
-                // Event listeners
-                searchInput.addEventListener('input', function() {
+                // Show recent searches on focus if input is empty
+                searchInput.addEventListener('focus', function() {
                     const query = this.value.trim();
-                    fetchSuggestions(query);
+                    if (!query) {
+                        fetchSuggestions('');
+                    } else {
+                        fetchSuggestions(query);
+                    }
                 });
 
-                searchInput.addEventListener('focus', function() {
+                // Fetch suggestions as user types
+                searchInput.addEventListener('input', function() {
                     const query = this.value.trim();
                     fetchSuggestions(query);
                 });
@@ -478,6 +520,15 @@
             }
         });
     </script>
+
+    {% if current_user.is_authenticated %}
+    <script>
+        // Pass the list of club slugs the user is a member of to JS
+        window.currentUserClubs = [
+            {% for club in current_user.clubs %}'{{ club.slug }}'{% if not loop.last %}, {% endif %}{% endfor %}
+        ];
+    </script>
+    {% endif %}
 
     {% block extra_js %}{% endblock %}
 </body>

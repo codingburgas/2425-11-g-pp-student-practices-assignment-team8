@@ -334,25 +334,32 @@ def search_suggestions():
                 'slug': slug
             })
 
-    if not suggestions:
+    # Also search for matching club events if authenticated
+    club_events = []
+    if current_user.is_authenticated:
+        # Get all clubs (not just joined clubs) for searching events
+        all_clubs = Club.query.all()
+        for club in all_clubs:
+            # Get events for this club
+            events = ClubEvent.query.filter_by(club_id=club.id).order_by(ClubEvent.event_date.asc()).all()
+            for event in events:
+                # Check if the event description or club name matches the query
+                event_description = event.detail.description if event.detail else ''
+                if query in event_description.lower() or query in club.name.lower():
+                    club_events.append({
+                        'club_name': club.name,
+                        'club_slug': club.slug,
+                        'event_date': event.event_date.isoformat(),
+                        'description': event_description,
+                    })
+
+    if not suggestions and not club_events:
         return jsonify({
             'suggestions': [],
             'type': 'no_results',
             'club_events': []
         })
 
-    # Also include club events for joined clubs if authenticated
-    club_events = []
-    if current_user.is_authenticated:
-        for club in current_user.clubs:
-            events = ClubEvent.query.filter_by(club_id=club.id).order_by(ClubEvent.event_date.asc()).all()
-            for event in events:
-                club_events.append({
-                    'club_name': club.name,
-                    'club_slug': club.slug,
-                    'event_date': event.event_date.isoformat(),
-                    'description': event.detail.description if event.detail else '',
-                })
     return jsonify({
         'suggestions': suggestions,
         'type': 'results',
