@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}All Club Schedules & Participants{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-warning">All Clubs - Schedules & Participants</h2>
+    <div class="table-responsive">
+        <table class="table table-dark table-striped">
+            <thead>
+                <tr>
+                    <th>Club Name</th>
+                    <th>Slug</th>
+                    <th>Participants</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for club in clubs %}
+                <tr>
+                    <td>{{ club.name }}</td>
+                    <td>{{ club.slug }}</td>
+                    <td>{{ club.participants }}</td>
+                    <td>
+                        <a href="{{ url_for('main_bp.club_calendar', club_slug=club.slug) }}" class="btn btn-primary btn-sm">View Schedule</a>
+                        <a href="{{ url_for('main_bp.club_participants', club_slug=club.slug) }}" class="btn btn-warning btn-sm">View Participants</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <a href="{{ url_for('main_bp.index') }}" class="btn btn-outline-primary mt-3">Back to Home</a>
+</div>
+{% endblock %}
+

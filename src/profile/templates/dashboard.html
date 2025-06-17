@@ -55,6 +55,11 @@
         <a href="{{ url_for('profile.view_clients') }}" class="btn btn-primary">View Students</a>
     </div>
     {% endif %}
+    {% if current_user.role == 'developer' or current_user.role == 'teacher' %}
+    <div class="mb-4">
+        <a href="{{ url_for('main_bp.all_club_schedules') }}" class="btn btn-warning">Club Management</a>
+    </div>
+    {% endif %}
     <form method="POST" action="">
         {{ form.hidden_tag() }}
 

@@ -524,3 +524,12 @@ def club_participants(club_slug):
     club = Club.query.filter_by(slug=club_slug).first_or_404()
     participants = club.users
     return render_template('club_participants.html', club=club, participants=participants)
+
+@main_bp.route('/admin/all-club-schedules')
+@login_required
+def all_club_schedules():
+    if current_user.role not in ['developer', 'teacher']:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('main_bp.index'))
+    clubs = Club.query.all()
+    return render_template('admin/all_club_schedules.html', clubs=clubs, current_user=current_user)
