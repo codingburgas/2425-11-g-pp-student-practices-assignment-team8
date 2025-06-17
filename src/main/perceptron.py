@@ -1,4 +1,5 @@
 import numpy as np
+from ..auth.models import TrainingResults, User
 from .models import ModelInfo
 from .. import db
 import json
@@ -72,43 +73,57 @@ class Perceptron:
         # Return index of highest output
         return np.argmax(outputs, axis=1)
     
-    def save_to_db(self, username, model_name="ClubRecommender"):
+    def evaluate(self, X, y_true):
+        """
+        Evaluate the perceptron on the given data and return accuracy.
+
+        Args:
+            X: Input features (survey responses)
+            y_true: True labels (one-hot encoded)
+
+        Returns:
+            Accuracy as a float (0.0 - 1.0)
+        """
+        y_pred = self.predict(X)
+        y_true_indices = np.argmax(y_true, axis=1)
+        accuracy = np.mean(y_pred == y_true_indices)
+        return accuracy
+
+    def save_to_db(self, user_id, model_name="ClubRecommender", accuracy=0.0):
         """
         Save the trained model to the database.
         
         Args:
-            username: Username of the user who trained the model
+            user_id: ID of the user who trained the model
             model_name: Name of the model
-            
+            accuracy: Model accuracy to store
+
         Returns:
-            The saved ModelInfo object
+            The saved TrainingResults object
         """
 
+        import json
         weights_json = json.dumps(self.weights.tolist())
-        
-        # Create parameters dictionary
         parameters = {
             "input_size": self.input_size,
             "output_size": self.output_size,
             "learning_rate": self.learning_rate,
             "epochs": self.epochs
         }
-
         parameters_json = json.dumps(parameters)
-
-        model_info = ModelInfo(
+        training_result = TrainingResults(
+            user_id=user_id,
+            model_name=model_name,
             weights=weights_json,
-            username=username,
-            modelName=model_name,
-            accuracy=0.0,
+            accuracy=accuracy,
             parameters=parameters_json
         )
 
-        db.session.add(model_info)
+        db.session.add(training_result)
         db.session.commit()
         
-        return model_info
-    
+        return training_result
+
     @classmethod
     def load_from_db(cls, model_id=None):
         """

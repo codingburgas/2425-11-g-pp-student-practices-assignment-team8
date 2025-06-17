@@ -58,6 +58,7 @@
     {% if current_user.role == 'developer' or current_user.role == 'teacher' %}
     <div class="mb-4">
         <a href="{{ url_for('main_bp.all_club_schedules') }}" class="btn btn-warning">Club Management</a>
+        <a href="{{ url_for('main_bp.perceptron_training_diagram') }}" class="btn btn-warning ms-2">Perceptron Training Review</a>
     </div>
     {% endif %}
     <form method="POST" action="">
