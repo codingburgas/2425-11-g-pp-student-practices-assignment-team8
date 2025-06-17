@@ -20,7 +20,7 @@
                     {% for result in results %}
                     <tr>
                         <td>{{ result.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                        <td>{{ result.modelName }}</td>
+                        <td>{{ result.model_name }}</td>
                         <td>{{ result.username }}</td>
                         <td>{{ '%.2f'|format(result.accuracy * 100) }}%</td>
                     </tr>
@@ -71,4 +71,3 @@
     });
 </script>
 {% endblock %}
-

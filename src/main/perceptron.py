@@ -89,13 +89,13 @@ class Perceptron:
         accuracy = np.mean(y_pred == y_true_indices)
         return accuracy
 
-    def save_to_db(self, user_id, model_name="ClubRecommender", accuracy=0.0):
+    def save_to_db(self, user_id, model_name=None, accuracy=0.0):
         """
         Save the trained model to the database.
         
         Args:
             user_id: ID of the user who trained the model
-            model_name: Name of the model
+            model_name: Name of the model (ignored, always 'perceptron')
             accuracy: Model accuracy to store
 
         Returns:
@@ -113,7 +113,7 @@ class Perceptron:
         parameters_json = json.dumps(parameters)
         training_result = TrainingResults(
             user_id=user_id,
-            model_name=model_name,
+            model_name="perceptron",
             weights=weights_json,
             accuracy=accuracy,
             parameters=parameters_json

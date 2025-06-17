@@ -559,12 +559,17 @@ def perceptron_training_diagram():
         return redirect(url_for('main_bp.index'))
     from ..auth.models import TrainingResults, User
     results = TrainingResults.query.order_by(TrainingResults.created_at.asc()).all()
+    # Attach username and force model_name for each result
+    for result in results:
+        user = User.query.get(result.user_id) if result.user_id else None
+        result.username = user.username if user else 'Unknown'
+        result.model_name = 'perceptron'
     diagram_data = [
         {
             'x': result.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'y': result.accuracy or 0.0,
             'model': result.model_name,
-            'username': User.query.get(result.user_id).username if result.user_id else 'Unknown'
+            'username': result.username
         }
         for result in results
     ]
