@@ -49,4 +49,19 @@ class ClubEvent(db.Model):
 
     detail = db.relationship('EventDetail', backref='club_event', uselist=False)
 
-
+class UserSurvey(db.Model):
+    __tablename__ = 'user_surveys'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    enjoy_activities = db.Column(db.Boolean, default=False)
+    enjoy_sports = db.Column(db.Boolean, default=False)
+    enjoy_art = db.Column(db.Boolean, default=False)
+    enjoy_science = db.Column(db.Boolean, default=False)
+    enjoy_clubs = db.Column(db.Boolean, default=False)
+    enjoy_fieldtrips = db.Column(db.Boolean, default=False)
+    overall_satisfied = db.Column(db.Boolean, default=False)
+    more_resources = db.Column(db.Boolean, default=False)
+    recommend = db.Column(db.Boolean, default=False)
+    enjoy_math = db.Column(db.Boolean, default=False)
+    recommended_club = db.Column(db.String(64), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

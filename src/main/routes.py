@@ -102,6 +102,29 @@ def poll():
         # Store the recommendation in the session
         session['recommended_club'] = club
 
+        # Save survey data to database for future training
+        from .models import UserSurvey
+        user_survey = UserSurvey(
+            user_id=current_user.id if current_user.is_authenticated else None,
+            enjoy_activities=survey_data['enjoy_activities'].lower() == 'true',
+            enjoy_sports=survey_data['enjoy_sports'].lower() == 'true',
+            enjoy_art=survey_data['enjoy_art'].lower() == 'true',
+            enjoy_science=survey_data['enjoy_science'].lower() == 'true',
+            enjoy_clubs=survey_data['enjoy_clubs'].lower() == 'true',
+            enjoy_fieldtrips=survey_data['enjoy_fieldtrips'].lower() == 'true',
+            overall_satisfied=survey_data['overall_satisfied'].lower() == 'true',
+            more_resources=survey_data['more_resources'].lower() == 'true',
+            recommend=survey_data['recommend'].lower() == 'true',
+            enjoy_math=survey_data['enjoy_math'].lower() == 'true',
+            recommended_club=club['slug']
+        )
+        db.session.add(user_survey)
+        db.session.commit()
+
+        # Retrain the perceptron with this new data point and save the new model
+        if current_user.is_authenticated:
+            retrain_and_save_model_with_user_data(current_user.id)
+
         # Redirect to the recommendation page
         return redirect(url_for('main_bp.club_recommendation'))
 
@@ -546,3 +569,79 @@ def perceptron_training_diagram():
         for result in results
     ]
     return render_template('admin/perceptron_training_diagram.html', diagram_data=diagram_data, results=results, current_user=current_user)
+
+def retrain_and_save_model_with_user_data(user_id):
+    """
+    Retrains the perceptron model with accumulated user survey data and saves the model.
+
+    This function:
+    1. Retrieves all user survey responses from the database
+    2. Converts them to features and targets for training
+    3. Trains a new perceptron model
+    4. Evaluates the model accuracy
+    5. Saves the model to the database with training information
+
+    Args:
+        user_id: ID of the user who initiated the training
+    """
+    from .models import UserSurvey
+    import numpy as np
+    from .perceptron import Perceptron
+
+    # Get all user surveys
+    surveys = UserSurvey.query.all()
+
+    if not surveys:
+        return  # No data to train with
+
+    # Extract features from surveys
+    features = []
+    targets = []
+    club_slugs = ['chess-club', 'robotics', 'art-club', 'music-band', 'mathletes',
+                 'drama-club', 'debate-team', 'coding-club', 'sports-club']
+
+    for survey in surveys:
+        # Create feature vector from survey
+        feature = [
+            1,  # Always 1 for "enjoy_activities"
+            1 if survey.enjoy_sports else 0,
+            1 if survey.enjoy_art else 0,
+            1 if survey.enjoy_science else 0,
+            1 if survey.enjoy_clubs else 0,
+            1 if survey.enjoy_fieldtrips else 0,
+            1 if survey.overall_satisfied else 0,
+            1 if survey.more_resources else 0,
+            1 if survey.recommend else 0,
+            1 if survey.enjoy_math else 0
+        ]
+        features.append(feature)
+
+        # Create one-hot encoded target
+        club_index = club_slugs.index(survey.recommended_club) if survey.recommended_club in club_slugs else 0
+        target = [0] * len(club_slugs)
+        target[club_index] = 1
+        targets.append(target)
+
+    # Convert to numpy arrays
+    X = np.array(features)
+    y = np.array(targets)
+
+    # Train new perceptron
+    perceptron_model = Perceptron()
+    perceptron_model.train(X, y)
+
+    # Evaluate model accuracy
+    accuracy = perceptron_model.evaluate(X, y)
+
+    # Save model
+    perceptron_model.save_to_db(
+        user_id=user_id,
+        model_name=f"UserTrainedModel-{datetime.now().strftime('%Y%m%d%H%M')}",
+        accuracy=accuracy
+    )
+
+    # Update the global perceptron with the new model
+    global perceptron
+    perceptron = perceptron_model
+
+    return accuracy
