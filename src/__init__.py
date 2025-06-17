@@ -42,4 +42,14 @@ def create_app(config):
     app.register_blueprint(main_bp)
     app.register_blueprint(prof_bp, url_prefix='/profile')
 
+    # Custom error handlers
+    from flask import render_template
+    @app.errorhandler(404)
+    def not_found_error(error):
+        return render_template('404.html'), 404
+
+    @app.errorhandler(500)
+    def internal_error(error):
+        return render_template('500.html'), 500
+
     return app
