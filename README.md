@@ -66,3 +66,10 @@ The system provides a domain-independent API authentication mechanism using JWT 
 3. Use the refresh token to get a new access token when the current one expires
 
 A test script (`test_api_auth.py`) is provided to demonstrate the API usage.
+### 
+Lucidchart database diagram - https://lucid.app/lucidchart/3fb2b346-ffb2-45e3-a303-fe230c72d3a8/edit?beaconFlowId=B244F018134E58D0&page=0_0&invitationId=inv_bb9706e8-13b6-4bd8-83f2-b5d7f21de3a1#
+
+UserStories diagram - https://lucid.app/lucidchart/273f8f3c-1c2d-497a-9de6-ae01b3d9af88/edit?beaconFlowId=D0E264F813893273&page=0_0&invitationId=inv_fcc0dbc6-1c16-4d15-944d-c9a7c9bc2994#
+Lucid visual collaboration suite: Log in
+Go from imagining the future to building it. Log in to access Lucidchart for intelligent diagramming or Lucidspark for virtual whiteboarding. Teams can collaborate, ideate, and build projects in re...
+ 

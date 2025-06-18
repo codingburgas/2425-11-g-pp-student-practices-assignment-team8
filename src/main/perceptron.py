@@ -1,4 +1,5 @@
 import numpy as np
+from ..auth.models import TrainingResults, User
 from .models import ModelInfo
 from .. import db
 import json
@@ -29,18 +30,25 @@ class Perceptron:
         """
         # Add bias term to inputs
         X_with_bias = np.hstack((X, np.ones((X.shape[0], 1))))
-        
+        self.error_history = []
+        self.loss_history = []
         for epoch in range(self.epochs):
             # Forward pass
             outputs = self.predict_raw(X_with_bias)
-            
             # Compute error
             error = y - outputs
-            
             # Update weights
             delta = self.learning_rate * np.dot(error.T, X_with_bias)
             self.weights += delta
-            
+            # Calculate misclassification error (number of wrong predictions)
+            y_pred = np.argmax(outputs, axis=1)
+            y_true = np.argmax(y, axis=1)
+            misclassified = np.sum(y_pred != y_true)
+            self.error_history.append(int(misclassified))
+            # Calculate mean squared error (loss)
+            mse = np.mean((y - outputs) ** 2)
+            self.loss_history.append(float(mse))
+
     def predict_raw(self, X_with_bias):
         """
         Make raw predictions (before applying activation function).
@@ -72,43 +80,61 @@ class Perceptron:
         # Return index of highest output
         return np.argmax(outputs, axis=1)
     
-    def save_to_db(self, username, model_name="ClubRecommender"):
+    def evaluate(self, X, y_true):
+        """
+        Evaluate the perceptron on the given data and return accuracy.
+
+        Args:
+            X: Input features (survey responses)
+            y_true: True labels (one-hot encoded)
+
+        Returns:
+            Accuracy as a float (0.0 - 1.0)
+        """
+        y_pred = self.predict(X)
+        y_true_indices = np.argmax(y_true, axis=1)
+        accuracy = np.mean(y_pred == y_true_indices)
+        return accuracy
+
+    def save_to_db(self, user_id, model_name=None, accuracy=0.0):
         """
         Save the trained model to the database.
         
         Args:
-            username: Username of the user who trained the model
-            model_name: Name of the model
-            
+            user_id: ID of the user who trained the model
+            model_name: Name of the model (ignored, always 'perceptron')
+            accuracy: Model accuracy to store
+
         Returns:
-            The saved ModelInfo object
+            The saved TrainingResults object
         """
 
+        import json
         weights_json = json.dumps(self.weights.tolist())
-        
-        # Create parameters dictionary
         parameters = {
             "input_size": self.input_size,
             "output_size": self.output_size,
             "learning_rate": self.learning_rate,
             "epochs": self.epochs
         }
-
         parameters_json = json.dumps(parameters)
-
-        model_info = ModelInfo(
+        error_history_json = json.dumps(getattr(self, 'error_history', []))
+        loss_history_json = json.dumps(getattr(self, 'loss_history', []))
+        training_result = TrainingResults(
+            user_id=user_id,
+            model_name="perceptron",
             weights=weights_json,
-            username=username,
-            modelName=model_name,
-            accuracy=0.0,
-            parameters=parameters_json
+            accuracy=accuracy,
+            parameters=parameters_json,
+            error_history=error_history_json,
+            loss_history=loss_history_json
         )
 
-        db.session.add(model_info)
+        db.session.add(training_result)
         db.session.commit()
         
-        return model_info
-    
+        return training_result
+
     @classmethod
     def load_from_db(cls, model_id=None):
         """

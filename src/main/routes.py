@@ -31,33 +31,27 @@ def index():
 @main_bp.route('/train-model', methods=['POST'])
 def train_model():
     data = request.json
-    weights = str(data.get('weights'))
-    username = data.get('username')
+    user_id = data.get('user_id')
     modelName = data.get('modelName')
 
-    # Create new model info record
-    model_info = ModelInfo(
-        weights=weights,
-        username=username,
-        modelName=modelName,
-        accuracy=data.get('accuracy', 0.0),  # Default to 0.0 if not provided
-        created_at=datetime.utcnow(),
-        parameters=str(data.get('parameters', {}))  # Convert parameters to string
-    )
-
-    try:
-        db.session.add(model_info)
-        db.session.commit()
-        return jsonify({"success": True, "message": "Model trained successfully"})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"success": False, "message": str(e)}), 500
+    import numpy as np
+    from .perceptron import Perceptron
+    X = np.array(data.get('X')) if data.get('X') else None
+    y = np.array(data.get('y')) if data.get('y') else None
+    if X is not None and y is not None and user_id:
+        perceptron = Perceptron()
+        perceptron.train(X, y)
+        accuracy = perceptron.evaluate(X, y)
+        perceptron.save_to_db(user_id=user_id, model_name=modelName, accuracy=accuracy)
+        return jsonify({"success": True, "message": "Model trained and saved", "accuracy": accuracy})
+    else:
+        return jsonify({"success": False, "message": "Missing training data or user_id"}), 400
 
 
 @main_bp.route('/results')
 def results():
-    # Get all results from the database
-    all_results = ModelInfo.query.order_by(ModelInfo.created_at.desc()).all()
+    from ..auth.models import TrainingResults
+    all_results = TrainingResults.query.order_by(TrainingResults.created_at.desc()).all()
     return render_template(
         "results.html",
         results=all_results,
@@ -107,6 +101,29 @@ def poll():
 
         # Store the recommendation in the session
         session['recommended_club'] = club
+
+        # Save survey data to database for future training
+        from .models import UserSurvey
+        user_survey = UserSurvey(
+            user_id=current_user.id if current_user.is_authenticated else None,
+            enjoy_activities=survey_data['enjoy_activities'].lower() == 'true',
+            enjoy_sports=survey_data['enjoy_sports'].lower() == 'true',
+            enjoy_art=survey_data['enjoy_art'].lower() == 'true',
+            enjoy_science=survey_data['enjoy_science'].lower() == 'true',
+            enjoy_clubs=survey_data['enjoy_clubs'].lower() == 'true',
+            enjoy_fieldtrips=survey_data['enjoy_fieldtrips'].lower() == 'true',
+            overall_satisfied=survey_data['overall_satisfied'].lower() == 'true',
+            more_resources=survey_data['more_resources'].lower() == 'true',
+            recommend=survey_data['recommend'].lower() == 'true',
+            enjoy_math=survey_data['enjoy_math'].lower() == 'true',
+            recommended_club=club['slug']
+        )
+        db.session.add(user_survey)
+        db.session.commit()
+
+        # Retrain the perceptron with this new data point and save the new model
+        if current_user.is_authenticated:
+            retrain_and_save_model_with_user_data(current_user.id)
 
         # Redirect to the recommendation page
         return redirect(url_for('main_bp.club_recommendation'))
@@ -524,3 +541,122 @@ def club_participants(club_slug):
     club = Club.query.filter_by(slug=club_slug).first_or_404()
     participants = club.users
     return render_template('club_participants.html', club=club, participants=participants)
+
+@main_bp.route('/admin/all-club-schedules')
+@login_required
+def all_club_schedules():
+    if current_user.role not in ['developer', 'teacher']:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('main_bp.index'))
+    clubs = Club.query.all()
+    return render_template('admin/all_club_schedules.html', clubs=clubs, current_user=current_user)
+
+@main_bp.route('/admin/perceptron-training-diagram')
+@login_required
+def perceptron_training_diagram():
+    if current_user.role not in ['developer', 'teacher']:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('main_bp.index'))
+    from ..auth.models import TrainingResults, User
+    results = TrainingResults.query.order_by(TrainingResults.created_at.asc()).all()
+    # Attach username and force model_name for each result
+    results_serialized = []
+    for result in results:
+        user = User.query.get(result.user_id) if result.user_id else None
+        username = user.username if user else 'Unknown'
+        model_name = 'perceptron'
+        results_serialized.append({
+            'id': result.id,
+            'created_at': result.created_at.strftime('%Y-%m-%d %H:%M:%S') if result.created_at else '',
+            'model_name': model_name,
+            'username': username,
+            'accuracy': result.accuracy,
+            'error_history': result.error_history,
+            'loss_history': result.loss_history
+        })
+    diagram_data = [
+        {
+            'x': result.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'y': result.accuracy or 0.0,
+            'model': 'perceptron',
+            'username': User.query.get(result.user_id).username if result.user_id else 'Unknown'
+        }
+        for result in results
+    ]
+    return render_template('admin/perceptron_training_diagram.html', diagram_data=diagram_data, results=results_serialized, current_user=current_user)
+
+def retrain_and_save_model_with_user_data(user_id):
+    """
+    Retrains the perceptron model with accumulated user survey data and saves the model.
+
+    This function:
+    1. Retrieves all user survey responses from the database
+    2. Converts them to features and targets for training
+    3. Trains a new perceptron model
+    4. Evaluates the model accuracy
+    5. Saves the model to the database with training information
+
+    Args:
+        user_id: ID of the user who initiated the training
+    """
+    from .models import UserSurvey
+    import numpy as np
+    from .perceptron import Perceptron
+
+    # Get all user surveys
+    surveys = UserSurvey.query.all()
+
+    if not surveys:
+        return  # No data to train with
+
+    # Extract features from surveys
+    features = []
+    targets = []
+    club_slugs = ['chess-club', 'robotics', 'art-club', 'music-band', 'mathletes',
+                 'drama-club', 'debate-team', 'coding-club', 'sports-club']
+
+    for survey in surveys:
+        # Create feature vector from survey
+        feature = [
+            1,  # Always 1 for "enjoy_activities"
+            1 if survey.enjoy_sports else 0,
+            1 if survey.enjoy_art else 0,
+            1 if survey.enjoy_science else 0,
+            1 if survey.enjoy_clubs else 0,
+            1 if survey.enjoy_fieldtrips else 0,
+            1 if survey.overall_satisfied else 0,
+            1 if survey.more_resources else 0,
+            1 if survey.recommend else 0,
+            1 if survey.enjoy_math else 0
+        ]
+        features.append(feature)
+
+        # Create one-hot encoded target
+        club_index = club_slugs.index(survey.recommended_club) if survey.recommended_club in club_slugs else 0
+        target = [0] * len(club_slugs)
+        target[club_index] = 1
+        targets.append(target)
+
+    # Convert to numpy arrays
+    X = np.array(features)
+    y = np.array(targets)
+
+    # Train new perceptron
+    perceptron_model = Perceptron()
+    perceptron_model.train(X, y)
+
+    # Evaluate model accuracy
+    accuracy = perceptron_model.evaluate(X, y)
+
+    # Save model
+    perceptron_model.save_to_db(
+        user_id=user_id,
+        model_name=f"UserTrainedModel-{datetime.now().strftime('%Y%m%d%H%M')}",
+        accuracy=accuracy
+    )
+
+    # Update the global perceptron with the new model
+    global perceptron
+    perceptron = perceptron_model
+
+    return accuracy

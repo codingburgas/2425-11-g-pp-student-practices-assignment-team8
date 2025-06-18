@@ -33,3 +33,5 @@ class TrainingResults(db.Model):
     accuracy = db.Column(db.Float)  # Model accuracy if applicable
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     parameters = db.Column(db.Text)  # Store any additional model parameters as JSON
+    error_history = db.Column(db.Text)  # JSON list of error per epoch
+    loss_history = db.Column(db.Text)   # JSON list of loss per epoch
