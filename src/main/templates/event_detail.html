@@ -15,7 +15,70 @@
     <div class="alert alert-warning mt-3">No details have been added for this event yet.</div>
     {% endif %}
 
+    {# Show chat for all event dates, only for club members #}
+    {% if is_member %}
+    <hr class="my-4">
+    <div class="container">
+        <h4 class="text-light">Club Chat for {{ date }}</h4>
+        <a id="open-chat-link" href="{{ url_for('main_bp.full_chat', club_slug=club.slug, date=date) }}" style="text-decoration: none;">
+            <div id="chat-box" data-date-id="{{ date }}" data-club-slug="{{ club.slug }}" class="bg-dark text-white p-3 mb-3" style="height: 200px; overflow-y: auto; border: 1px solid #444; cursor:pointer; background: rgba(0,0,0,0.2); backdrop-filter: blur(2px);">
+                <span class="text-muted" id="chat-preview-placeholder">Кликнете тук, за да видите всички съобщения</span>
+            </div>
+        </a>
+        <form id="chat-form" class="d-flex">
+            <input type="text" id="chat-input" class="form-control me-2" placeholder="Type a message...">
+            <button class="btn btn-primary" type="submit">Send</button>
+        </form>
+    </div>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const socket = io();
+        const chatBox = document.getElementById("chat-box");
+        const chatForm = document.getElementById("chat-form");
+        const chatInput = document.getElementById("chat-input");
+        const dateId = chatBox.dataset.dateId;
+        const clubSlug = chatBox.dataset.clubSlug;
+        const chatPreviewPlaceholder = document.getElementById("chat-preview-placeholder");
+        socket.emit("join", { date_id: dateId, club_slug: clubSlug });
+        socket.on("load_messages", (messages) => {
+          chatBox.innerHTML = "";
+          if (messages.length === 0) {
+            chatBox.appendChild(chatPreviewPlaceholder);
+          } else {
+            // Show only the last 3 messages as a preview
+            const previewMsgs = messages.slice(-3);
+            previewMsgs.forEach(msg => appendMessage(msg));
+          }
+        });
+        socket.on("new_message", (msg) => {
+          // Only update preview if less than 3 messages, otherwise do nothing (user should refresh for new preview)
+          if (chatBox.children.length < 3) {
+            appendMessage(msg);
+          }
+        });
+        chatForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const message = chatInput.value.trim();
+          if (message) {
+            socket.emit("send_message", { date_id: dateId, club_slug: clubSlug, message: message });
+            chatInput.value = "";
+          }
+        });
+        function appendMessage(msg) {
+          const div = document.createElement("div");
+          div.classList.add("mb-1");
+          div.innerHTML = `<strong>${msg.user}</strong> <small class="text-muted">${msg.time}</small><br>${msg.message}`;
+          chatBox.appendChild(div);
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        chatBox.onclick = function() {
+          window.location.href = document.getElementById('open-chat-link').href;
+        };
+      });
+    </script>
+    {% endif %}
+
     <a href="{{ url_for('main_bp.club_calendar', club_slug=club.slug) }}" class="btn btn-secondary mt-3">← Back to Calendar</a>
 </div>
 {% endblock %}
-
