@@ -7,6 +7,12 @@ from .models import ModelInfo, ClubRequest, Club, EventDetail
 from .perceptron import Perceptron, survey_to_features, get_club_from_index, train_perceptron
 from ..auth.models import User
 from .models import ClubEvent
+from flask_socketio import SocketIO
+from flask import Blueprint, render_template, request
+from flask_login import current_user, login_required
+from flask_socketio import emit, join_room
+
+
 perceptron = train_perceptron()
 
 @main_bp.route('/')
@@ -515,11 +521,14 @@ def edit_event(slug, date):
         club_event.detail = detail
         db.session.commit()
 
+    # Check if user is a member
+    is_member = current_user in club.users
+
     # 🧍‍♂️ Student view
     if current_user.role != 'teacher':
         if not club_event.detail:
             abort(404)  # No info to show
-        return render_template('event_detail.html', club=club, date=date, event=club_event)
+        return render_template('event_detail.html', club=club, date=date, event=club_event, is_member=is_member)
 
     # 👨‍🏫 Teacher view
     if request.method == 'POST':
@@ -651,6 +660,7 @@ def retrain_and_save_model_with_user_data(user_id):
     # Save model
     perceptron_model.save_to_db(
         user_id=user_id,
+
         model_name=f"UserTrainedModel-{datetime.now().strftime('%Y%m%d%H%M')}",
         accuracy=accuracy
     )
@@ -660,3 +670,14 @@ def retrain_and_save_model_with_user_data(user_id):
     perceptron = perceptron_model
 
     return accuracy
+
+@main_bp.route('/clubs/<club_slug>/event/<date>/full-chat')
+@login_required
+def full_chat(club_slug, date):
+    club = Club.query.filter_by(slug=club_slug).first_or_404()
+    # Only allow members
+    is_member = current_user in club.users
+    if not is_member:
+        flash('Само членове на клуба могат да виждат чата.', 'danger')
+        return redirect(url_for('main_bp.club_detail', club_slug=club_slug))
+    return render_template('full_chat.html', club=club, date=date, is_member=is_member)
