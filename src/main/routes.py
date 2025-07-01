@@ -229,11 +229,12 @@ def handle_request():
 def join_club():
     data = request.get_json()
     club_slug = data.get('slug')
+    print(f"Received join request for slug: {club_slug}")
 
     club = Club.query.filter_by(slug=club_slug).first()
+    print(f"Club lookup result: {club}")
 
     if not club:
-        print(club)
         return jsonify({'success': False, 'message': 'Club not found'})
 
     if current_user in club.users:
@@ -265,6 +266,12 @@ def view_all_requests():
 # Dictionary of clubs for search functionality
 def get_clubs_dict():
     return {
+        'art-club': {
+            'name': 'Art Club',
+            'teacher': 'Mrs. Ivanova',
+            'image': 'art.png',
+            'description': 'Express yourself through painting, drawing, and mixed-media crafts.'
+        },
         'chess-club': {
             'name': 'Chess Club',
             'teacher': 'Mr. Petrov',
@@ -272,25 +279,13 @@ def get_clubs_dict():
             'description': 'Sharpen your mind with weekly chess tournaments and strategy workshops.'
         },
         'robotics': {
-            'name': 'Robotics',
+            'name': 'Robotics Club',
             'teacher': 'Ms. Dimitrova',
             'image': 'robots.png',
             'description': 'Build and program robots to compete in inter-school challenges.'
         },
-        'art-club': {
-            'name': 'Art Club',
-            'teacher': 'Mrs. Ivanova',
-            'image': 'art.png',
-            'description': 'Express yourself through painting, drawing, and mixed-media crafts.'
-        },
-        'music-band': {
-            'name': 'Music Band',
-            'teacher': 'Mr. Georgiev',
-            'image': 'band.png',
-            'description': 'Jam out in ensemble sessions and prepare for school concerts.'
-        },
         'mathletes': {
-            'name': 'Mathletes',
+            'name': 'Math Club',
             'teacher': 'Ms. Todorova',
             'image': 'math.png',
             'description': 'Solve challenging math problems and compete in tournaments.'
@@ -301,23 +296,35 @@ def get_clubs_dict():
             'image': 'drama.png',
             'description': 'Acting, directing, and stagecraft for upcoming plays and workshops.'
         },
-        'debate-team': {
-            'name': 'Debate Team',
+        'debate': {
+            'name': 'Debate Club',
             'teacher': 'Ms. Hristova',
             'image': 'debate.png',
             'description': 'Hone your public speaking and argument skills in mock debates.'
         },
-        'coding-club': {
-            'name': 'Coding Club',
-            'teacher': 'Mr. Totev',
-            'image': 'code.png',
-            'description': 'Learn to build web and desktop applications using Python and JavaScript.'
+        'music': {
+            'name': 'Band Club',
+            'teacher': 'Mr. Georgiev',
+            'image': 'band.png',
+            'description': 'Jam out in ensemble sessions and prepare for school concerts.'
         },
         'sports-club': {
             'name': 'Sports Club',
             'teacher': 'Mrs. Vasileva',
             'image': 'sports.png',
             'description': 'Team sports, fitness training, and inter-school matches.'
+        },
+        'story': {
+            'name': 'Story Club',
+            'teacher': 'Ms. Ivanova',
+            'image': 'story.png',
+            'description': 'Share and write stories, and participate in storytelling events.'
+        },
+        'coding': {
+            'name': 'Code Club',
+            'teacher': 'Mr. Totev',
+            'image': 'code.png',
+            'description': 'Learn to build web and desktop applications using Python and JavaScript.'
         },
     }
 
