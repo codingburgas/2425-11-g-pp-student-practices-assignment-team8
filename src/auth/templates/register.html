@@ -14,6 +14,11 @@
             border-color: black !important;
             color: white;
         }
+
+        .error-text {
+            color: red;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <div class="container mt-5" style="max-width: 500px;">
@@ -24,17 +29,27 @@
         <div class="form-group mb-3">
             {{ form.email.label(class="form-label") }}
             {{ form.email(class="form-control", placeholder="Enter your email") }}
+            {% for error in form.email.errors %}
+                <div class="error-text">{{ error }}</div>
+            {% endfor %}
         </div>
 
         <div class="form-group mb-3">
             {{ form.username.label(class="form-label") }}
             {{ form.username(class="form-control", placeholder="Choose a username") }}
+            {% for error in form.username.errors %}
+                <div class="error-text">{{ error }}</div>
+            {% endfor %}
         </div>
 
         <div class="form-group mb-3">
             {{ form.password.label(class="form-label") }}
             {{ form.password(class="form-control", placeholder="Create a password") }}
+            {% for error in form.password.errors %}
+                <div class="error-text">{{ error }}</div>
+            {% endfor %}
         </div>
+
         <button type="submit" class="btn btn-primary w-100">Create Account</button>
     </form>
     <p class="text-center mt-3">Already have an account?
