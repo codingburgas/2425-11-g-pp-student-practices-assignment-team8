@@ -1,7 +1,7 @@
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
-import sqlitecloud
+
 load_dotenv()
 
 class Config:
@@ -14,16 +14,23 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
 
-    conn = sqlitecloud.connect(
-        "sqlitecloud://cb0zln5enz.g4.sqlite.cloud:8860/chinook.sqlite?apikey=iH1c7C6VkEDX9vLfhR6awZ1V8UfiWRfnz46bJzwMIyA")
-    for table in ['users', 'clubs', 'user_surveys', 'event_details', "club_events", "club_members", "club_request",
-                  "model_info", "sqlite_sequence", "training_results", ]:  # etc.
-        cursor = conn.execute(f'SELECT * FROM {table};')
-        print(f"\n{table} rows:")
-        for row in cursor.fetchall():
-            print(dict(row))
-    result = cursor.fetchone()
+    DB_USER = os.getenv('DB_USER')
+    DB_PASSWORD = os.getenv('DB_PASSWORD')
+    DB_SERVER = os.getenv('DB_SERVER')
+    DB_NAME = os.getenv('DB_NAME')
 
-    print(result)
+    SQLALCHEMY_DATABASE_URI = (
+        f'mssql+pyodbc://{DB_USER}:{DB_PASSWORD}@{DB_SERVER}:1433/{DB_NAME}'
+        '?driver=ODBC+Driver+17+for+SQL+Server'
+        '&Encrypt=yes'
+        '&TrustServerCertificate=yes'
+        '&Connection+Timeout=30'
+    )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    conn.close()
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'jwt-secret-key')
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
+    JWT_TOKEN_LOCATION = ['headers']
+    JWT_HEADER_NAME = 'Authorization'
+    JWT_HEADER_TYPE = 'Bearer'

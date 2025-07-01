@@ -26,10 +26,15 @@ def send_verification_email(to_email: str, code: int) -> bool:
             html_content=f"<p>Your verification code is: <strong>{code}</strong></p>"
         )
         sg = SendGridAPIClient(os.getenv("SENDGRID_API_KEY"))
-        sg.send(message)
+        response = sg.send(message)
+        print(f"SendGrid response status: {response.status_code}")
+        print(f"SendGrid response body: {response.body}")
+        print(f"SendGrid response headers: {response.headers}")
         return True
     except Exception as e:
+        import traceback
         print(f"SendGrid error: {str(e)}")
+        traceback.print_exc()
+        if hasattr(e, 'body'):
+            print(f"SendGrid error body: {e.body}")
         return False
-
-
