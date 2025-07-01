@@ -103,9 +103,33 @@ def edit_user(user_id):
 def delete_user(user_id):
     if not current_user.is_authenticated or (current_user.role != 'developer' and current_user.role != 'teacher'):
         return {"success": False, "message": "Access denied"}, 403
+
     user = User.query.get(user_id)
     if not user:
         return {"success": False, "message": "User not found"}, 404
-    db.session.delete(user)
-    db.session.commit()
-    return redirect(url_for('profile.view_clients'))
+
+    try:
+        # Import required models
+        from ..main.models import UserSurvey
+        from ..auth.models import TrainingResults
+
+        # Delete related records first to avoid foreign key constraint violations
+
+        # Delete user surveys
+        UserSurvey.query.filter_by(user_id=user_id).delete()
+
+        # Delete training results
+        TrainingResults.query.filter_by(user_id=user_id).delete()
+
+        # Remove user from clubs (many-to-many relationship)
+        user.clubs.clear()
+
+        # Now delete the user
+        db.session.delete(user)
+        db.session.commit()
+
+        return redirect(url_for('profile.view_clients'))
+
+    except Exception as e:
+        db.session.rollback()
+        return {"success": False, "message": f"Error deleting user: {str(e)}"}, 500
