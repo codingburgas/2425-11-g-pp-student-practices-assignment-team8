@@ -5,41 +5,95 @@
 <div class="container mt-4">
     <h2 class="text-warning mb-4">Search Results for "{{ query }}"</h2>
 
-    {% if results %}
-        <div class="row">
-            {% for club in results %}
+    {# Slider for search type (only for admin/teacher) #}
+    {% if can_search_users %}
+    <form method="get" action="{{ url_for('main_bp.search_results') }}" class="mb-4">
+        <input type="hidden" name="query" value="{{ query }}">
+        <div class="d-flex align-items-center">
+            <label class="me-2">Search for:</label>
+            <div class="form-check form-switch me-3">
+                <input class="form-check-input" type="checkbox" id="searchTypeSwitch" name="search_type" value="users" {% if search_type == 'users' %}checked{% endif %} onchange="this.form.submit()">
+                <label class="form-check-label" for="searchTypeSwitch">
+                    <span id="searchTypeLabel">{{ 'Users' if search_type == 'users' else 'Clubs & Events' }}</span>
+                </label>
+            </div>
+        </div>
+    </form>
+    <script>
+    // Update label on toggle (optional, for better UX)
+    document.addEventListener('DOMContentLoaded', function() {
+        var switchInput = document.getElementById('searchTypeSwitch');
+        var label = document.getElementById('searchTypeLabel');
+        if (switchInput) {
+            switchInput.addEventListener('change', function() {
+                label.textContent = switchInput.checked ? 'Users' : 'Clubs & Events';
+            });
+        }
+    });
+    </script>
+    {% endif %}
+
+    {# User search results #}
+    {% if search_type == 'users' and can_search_users %}
+        {% if user_results %}
+            <div class="row">
+                {% for user in user_results %}
                 <div class="col-md-4 mb-4">
                     <div class="card h-100" style="background-color: var(--surface); border: 1px solid var(--primary);">
-                        <img src="{{ url_for('static', filename='images/' + club.image) }}" class="card-img-top" alt="{{ club.name }}" style="height: 180px; object-fit: cover;">
                         <div class="card-body">
-                            <h5 class="card-title text-warning">{{ club.name }}</h5>
-                            <p class="card-text text-warning fw-bold">👨‍🏫 Head Teacher: {{ club.teacher }}</p>
-                            <p class="card-text text-warning fw-bold">{{ club.description }}</p>
-                            <a href="{{ url_for('main_bp.club_detail', club_slug=club.slug) }}" class="btn btn-primary">View Details</a>
-                            {% set events = club_events_map[club.slug] %}
-                            {% if events and events|length > 0 %}
-                                <div class="mt-3">
-                                    <h6 class="text-warning">Upcoming Events:</h6>
-                                    <ul class="list-group">
-                                    {% for event in events %}
-                                        <li class="list-group-item bg-dark text-warning mb-1">
-                                            <strong>{{ event.event_date }}</strong>
-                                            {% if event.description %}- {{ event.description }}{% endif %}
-                                            <a href="{{ url_for('main_bp.edit_event', slug=club.slug, date=event.event_date) }}" class="btn btn-sm btn-outline-warning ms-2">View</a>
-                                        </li>
-                                    {% endfor %}
-                                    </ul>
-                                </div>
-                            {% endif %}
+                            <h5 class="card-title text-warning">{{ user.username }}</h5>
+                            <p class="card-text text-warning fw-bold">Email: {{ user.email }}</p>
+                            <p class="card-text text-warning fw-bold">Role: {{ user.role }}</p>
+                            <p class="card-text text-warning fw-bold">Clubs: {{ user.clubs_count }}</p>
+                            <a href="{{ url_for('profile.public_profile', user_id=user.id) }}" class="btn btn-primary">View Profile</a>
                         </div>
                     </div>
                 </div>
-            {% endfor %}
-        </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert" style="background-color: var(--surface); border: 1px solid var(--primary);">
+                <p class="mb-0">No users found matching your search criteria. Try a different search term.</p>
+            </div>
+        {% endif %}
     {% else %}
-        <div class="alert" style="background-color: var(--surface); border: 1px solid var(--primary);">
-            <p class="mb-0">No clubs found matching your search criteria. Try a different search term.</p>
-        </div>
+        {# Club/event search results (default) #}
+        {% if results %}
+            <div class="row">
+                {% for club in results %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100" style="background-color: var(--surface); border: 1px solid var(--primary);">
+                            <img src="{{ url_for('static', filename='images/' + club.image) }}" class="card-img-top" alt="{{ club.name }}" style="height: 180px; object-fit: cover;">
+                            <div class="card-body">
+                                <h5 class="card-title text-warning">{{ club.name }}</h5>
+                                <p class="card-text text-warning fw-bold">👨‍🏫 Head Teacher: {{ club.teacher }}</p>
+                                <p class="card-text text-warning fw-bold">{{ club.description }}</p>
+                                <a href="{{ url_for('main_bp.club_detail', club_slug=club.slug) }}" class="btn btn-primary">View Details</a>
+                                {% set events = club_events_map[club.slug] %}
+                                {% if events and events|length > 0 %}
+                                    <div class="mt-3">
+                                        <h6 class="text-warning">Upcoming Events:</h6>
+                                        <ul class="list-group">
+                                        {% for event in events %}
+                                            <li class="list-group-item bg-dark text-warning mb-1">
+                                                <strong>{{ event.event_date }}</strong>
+                                                {% if event.description %}- {{ event.description }}{% endif %}
+                                                <a href="{{ url_for('main_bp.edit_event', slug=club.slug, date=event.event_date) }}" class="btn btn-sm btn-outline-warning ms-2">View</a>
+                                            </li>
+                                        {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert" style="background-color: var(--surface); border: 1px solid var(--primary);">
+                <p class="mb-0">No clubs found matching your search criteria. Try a different search term.</p>
+            </div>
+        {% endif %}
     {% endif %}
 
     <div class="mt-4">

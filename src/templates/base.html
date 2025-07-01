@@ -229,6 +229,15 @@
                             <i class="bi bi-search"></i>
                         </button>
                         <div id="search-suggestions" class="position-absolute mt-1" style="top: 100%; left: 0; z-index: 1000; background-color: var(--surface); border: 1px solid var(--primary); border-radius: 15px; display: none; width: 100%; max-height: 300px; overflow-y: auto; overflow-x: hidden;">
+                            <div id="search-type-slider-container" style="display:none; background: var(--surface); border-radius: 10px 10px 0 0; padding: 8px 0 8px 0; width: 100%; z-index: 1010; border-bottom: 1px solid var(--primary);">
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <span class="me-2 fw-bold text-warning">Clubs & Events</span>
+                                    <div class="form-check form-switch mx-2">
+                                        <input class="form-check-input" type="checkbox" id="searchTypeSwitchLive" name="search_type" value="users">
+                                    </div>
+                                    <span class="ms-2 fw-bold text-warning">Users</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -247,7 +256,8 @@
                             <li><a class="dropdown-item" href="{{ url_for('profile.profile') }}">Profile</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('profile.settings') }}">Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Logout</a>
+                            </li>
                         </ul>
                     </li>
                 </ul>
@@ -362,48 +372,77 @@
             });
             const searchInput = document.getElementById('search-input');
             const suggestionsContainer = document.getElementById('search-suggestions');
+            const searchTypeSliderContainer = document.getElementById('search-type-slider-container');
+            const searchTypeSwitch = document.getElementById('searchTypeSwitchLive');
 
             if (searchInput && suggestionsContainer) {
                 let debounceTimer;
+                let searchType = 'clubs';
+                let canSearchUsers = false;
+                const searchTypeSliderContainer = document.getElementById('search-type-slider-container');
+                const searchTypeSwitch = document.getElementById('searchTypeSwitchLive');
 
                 // Function to fetch suggestions
                 const fetchSuggestions = (query) => {
                     clearTimeout(debounceTimer);
-
                     debounceTimer = setTimeout(() => {
-                        fetch(`/search-suggestions?query=${encodeURIComponent(query)}`)
+                        const params = new URLSearchParams({ query });
+                        if (canSearchUsers) params.append('search_type', searchType);
+                        fetch(`/search-suggestions?${params.toString()}`)
                             .then(response => response.json())
                             .then(data => {
+                                // Always clear, then re-append the slider as the first child if needed
                                 suggestionsContainer.innerHTML = '';
-
-                                if (data.type === 'no_results') {
-                                    // No results found
-                                    const noResults = document.createElement('div');
-                                    noResults.className = 'p-3 text-center';
-                                    noResults.textContent = 'No available suggestions';
-                                    suggestionsContainer.appendChild(noResults);
-                                    suggestionsContainer.style.display = 'block';
-                                } 
-                                else if (data.type === 'recent' && data.suggestions.length > 0) {
-                                    // Recent searches (show only 2)
-                                    const recentHeader = document.createElement('div');
-                                    recentHeader.className = 'p-2 text-warning fw-bold';
-                                    recentHeader.textContent = 'Recent Searches';
-                                    suggestionsContainer.appendChild(recentHeader);
-
-                                    data.suggestions.slice(0,2).forEach(search => {
-                                        const item = document.createElement('a');
-                                        item.className = 'dropdown-item py-2 px-3';
-                                        item.href = `/search?query=${encodeURIComponent(search)}`;
-                                        item.textContent = search;
-                                        suggestionsContainer.appendChild(item);
-                                    });
-
-                                    suggestionsContainer.style.display = 'block';
+                                canSearchUsers = data.can_search_users;
+                                let hasSuggestions = false;
+                                if (canSearchUsers && query) {
+                                    searchTypeSliderContainer.style.display = 'block';
+                                    suggestionsContainer.appendChild(searchTypeSliderContainer);
+                                } else {
+                                    searchTypeSliderContainer.style.display = 'none';
+                                }
+                                // Set slider state
+                                if (searchTypeSwitch) {
+                                    searchTypeSwitch.checked = (searchType === 'users');
+                                }
+                                // Handle user suggestions
+                                if (data.type === 'users') {
+                                    if (data.suggestions.length > 0) {
+                                        hasSuggestions = true;
+                                        const usersHeader = document.createElement('div');
+                                        usersHeader.className = 'p-2 text-warning fw-bold';
+                                        usersHeader.textContent = 'Users';
+                                        suggestionsContainer.appendChild(usersHeader);
+                                        data.suggestions.forEach(user => {
+                                            const item = document.createElement('a');
+                                            item.className = 'dropdown-item py-2 px-3';
+                                            item.href = `/profile/user/${user.id}`;
+                                            const nameSpan = document.createElement('div');
+                                            nameSpan.className = 'fw-bold text-warning';
+                                            nameSpan.textContent = user.username;
+                                            const emailSpan = document.createElement('div');
+                                            emailSpan.className = 'small text-warning';
+                                            emailSpan.textContent = user.email;
+                                            const roleSpan = document.createElement('div');
+                                            roleSpan.className = 'small text-warning';
+                                            roleSpan.textContent = `Role: ${user.role}`;
+                                            item.appendChild(nameSpan);
+                                            item.appendChild(emailSpan);
+                                            item.appendChild(roleSpan);
+                                            suggestionsContainer.appendChild(item);
+                                        });
+                                    } else {
+                                        hasSuggestions = true;
+                                        const noResults = document.createElement('div');
+                                        noResults.className = 'p-3 text-center';
+                                        noResults.textContent = 'No users found';
+                                        suggestionsContainer.appendChild(noResults);
+                                    }
                                 }
                                 else if (data.type === 'results') {
                                     // First show matching events if available
                                     if (data.club_events && data.club_events.length > 0) {
+                                        hasSuggestions = true;
                                         const eventsHeader = document.createElement('div');
                                         eventsHeader.className = 'p-2 text-warning fw-bold';
                                         eventsHeader.textContent = 'Upcoming Events';
@@ -438,6 +477,7 @@
 
                                     // Then show club results
                                     if (data.suggestions.length > 0) {
+                                        hasSuggestions = true;
                                         const clubsHeader = document.createElement('div');
                                         clubsHeader.className = 'p-2 text-warning fw-bold';
                                         clubsHeader.textContent = 'Clubs';
@@ -470,13 +510,11 @@
                                             suggestionsContainer.appendChild(item);
                                         });
                                     }
-
-                                    // If we have either events or clubs, show the container
-                                    if (data.club_events.length > 0 || data.suggestions.length > 0) {
-                                        suggestionsContainer.style.display = 'block';
-                                    }
                                 }
-                                else {
+                                // Show the suggestions dropdown if there are suggestions or the slider is visible
+                                if (hasSuggestions || (canSearchUsers && query)) {
+                                    suggestionsContainer.style.display = 'block';
+                                } else {
                                     suggestionsContainer.style.display = 'none';
                                 }
                             })
@@ -501,6 +539,15 @@
                     const query = this.value.trim();
                     fetchSuggestions(query);
                 });
+
+                // Handle slider toggle
+                if (searchTypeSwitch) {
+                    searchTypeSwitch.addEventListener('change', function() {
+                        searchType = this.checked ? 'users' : 'clubs';
+                        const query = searchInput.value.trim();
+                        fetchSuggestions(query);
+                    });
+                }
 
                 // Close suggestions when clicking outside
                 document.addEventListener('click', function(event) {

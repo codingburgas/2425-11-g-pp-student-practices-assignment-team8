@@ -331,6 +331,8 @@ def get_clubs_dict():
 @main_bp.route('/search-suggestions')
 def search_suggestions():
     query = request.args.get('query', '').lower()
+    search_type = request.args.get('search_type', 'clubs')
+    can_search_users = current_user.is_authenticated and (current_user.role == 'developer' or current_user.role == 'teacher')
 
     # If no query, return recent searches and club events for joined clubs
     if not query:
@@ -349,13 +351,36 @@ def search_suggestions():
         return jsonify({
             'suggestions': recent_searches[:2],
             'type': 'recent',
-            'club_events': club_events
+            'club_events': club_events,
+            'can_search_users': can_search_users
         })
 
-    # Search in clubs
+    # User search (for admin/teacher)
+    if search_type == 'users' and can_search_users:
+        from ..auth.models import User
+        users = User.query.filter(
+            db.or_(
+                User.username.ilike(f'%{query}%'),
+                User.email.ilike(f'%{query}%')
+            )
+        ).all()
+        user_suggestions = [
+            {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'role': user.role
+            } for user in users
+        ]
+        return jsonify({
+            'suggestions': user_suggestions,
+            'type': 'users',
+            'can_search_users': can_search_users
+        })
+
+    # Club/event search (default)
     clubs = get_clubs_dict()
     suggestions = []
-
     for slug, club in clubs.items():
         if query in club['name'].lower() or query in club['teacher'].lower():
             suggestions.append({
@@ -363,17 +388,13 @@ def search_suggestions():
                 'teacher': club['teacher'],
                 'slug': slug
             })
-
     # Also search for matching club events if authenticated
     club_events = []
     if current_user.is_authenticated:
-        # Get all clubs (not just joined clubs) for searching events
         all_clubs = Club.query.all()
         for club in all_clubs:
-            # Get events for this club
             events = ClubEvent.query.filter_by(club_id=club.id).order_by(ClubEvent.event_date.asc()).all()
             for event in events:
-                # Check if the event description or club name matches the query
                 event_description = event.detail.description if event.detail else ''
                 if query in event_description.lower() or query in club.name.lower():
                     club_events.append({
@@ -382,23 +403,29 @@ def search_suggestions():
                         'event_date': event.event_date.isoformat(),
                         'description': event_description,
                     })
-
     if not suggestions and not club_events:
         return jsonify({
             'suggestions': [],
             'type': 'no_results',
-            'club_events': []
+            'club_events': [],
+            'can_search_users': can_search_users
         })
-
     return jsonify({
         'suggestions': suggestions,
         'type': 'results',
-        'club_events': club_events
+        'club_events': club_events,
+        'can_search_users': can_search_users
     })
 
 @main_bp.route('/search')
 def search_results():
     query = request.args.get('query', '')
+    search_type = request.args.get('search_type', 'clubs')
+    can_search_users = current_user.is_authenticated and (current_user.role == 'developer' or current_user.role == 'teacher')
+    user_results = []
+    results = []
+    club_events_map = {}
+
     if query:
         recent_searches = session.get('recent_searches', [])
         if query in recent_searches:
@@ -406,32 +433,51 @@ def search_results():
         recent_searches.insert(0, query)
         session['recent_searches'] = recent_searches[:5]
 
-    clubs = get_clubs_dict()
-    results = []
-    club_events_map = {}
-    for slug, club in clubs.items():
-        if query.lower() in club['name'].lower() or query.lower() in club['teacher'].lower():
-            club_copy = club.copy()
-            club_copy['slug'] = slug
-            results.append(club_copy)
-            # Fetch events for this club
-            club_obj = Club.query.filter_by(slug=slug).first()
-            if club_obj:
-                events = ClubEvent.query.filter_by(club_id=club_obj.id).order_by(ClubEvent.event_date.asc()).all()
-                club_events_map[slug] = [
-                    {
-                        'event_date': event.event_date.isoformat(),
-                        'description': event.detail.description if event.detail else ''
-                    } for event in events
-                ]
-            else:
-                club_events_map[slug] = []
+    if search_type == 'users' and can_search_users:
+        from ..auth.models import User
+        users = User.query.filter(
+            db.or_(
+                User.username.ilike(f'%{query}%'),
+                User.email.ilike(f'%{query}%')
+            )
+        ).all()
+        user_results = [
+            {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'role': user.role,
+                'clubs_count': len(user.clubs) if hasattr(user, 'clubs') else 0
+            } for user in users
+        ]
+    else:
+        clubs = get_clubs_dict()
+        for slug, club in clubs.items():
+            if query.lower() in club['name'].lower() or query.lower() in club['teacher'].lower():
+                club_copy = club.copy()
+                club_copy['slug'] = slug
+                results.append(club_copy)
+                # Fetch events for this club
+                club_obj = Club.query.filter_by(slug=slug).first()
+                if club_obj:
+                    events = ClubEvent.query.filter_by(club_id=club_obj.id).order_by(ClubEvent.event_date.asc()).all()
+                    club_events_map[slug] = [
+                        {
+                            'event_date': event.event_date.isoformat(),
+                            'description': event.detail.description if event.detail else ''
+                        } for event in events
+                    ]
+                else:
+                    club_events_map[slug] = []
 
     return render_template(
         'search_results.html',
         query=query,
+        search_type=search_type,
         results=results,
         club_events_map=club_events_map,
+        user_results=user_results,
+        can_search_users=can_search_users,
         current_user=current_user
     )
 
